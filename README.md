@@ -64,4 +64,4 @@ Bagi Anda yang ingin menguji coba aplikasi ini di perangkat lokal:
 1. Pastikan **Java Development Kit (JDK) 8** atau versi lebih baru sudah terpasang di komputer Anda.
 2. *Clone repository* ini:
    ```bash
-   git clone [https://github.com/username-kamu/nama-repo-kamu.git](https://github.com/username-kamu/nama-repo-kamu.git](https://github.com/suryahadipurnamasurya-collab/tugas-kelompok-PBO)
+   git clone (https://github.com/suryahadipurnamasurya-collab/tugas-kelompok-PBO)](https://github.com/suryahadipurnamasurya-collab/tugas-kelompok-PBO/edit/main/README.md)
