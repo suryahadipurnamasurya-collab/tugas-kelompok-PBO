@@ -21,7 +21,7 @@ Proyek ini dikembangkan sebagai pemenuhan **Ujian Tengah Semester (UTS) Mata Kul
 ### 👨‍💻 Pengembang
 * **Nama:** Suryahadi Purnama
 * **NIM:** 25051204402
-* **Divisi/Program Studi:** S1 Teknologi Informasi, Universitas Negeri Surabaya
+* **Divisi/Program Studi:** S1 Teknik Informatika, Universitas Negeri Surabaya
 
 ---
 
@@ -52,7 +52,6 @@ Proyek ini mengimplementasikan 9 pilar utama Pemrograman Berorientasi Objek yang
 ---
 
 ## 📸 Tampilan Antarmuka (Screenshots)
-*(Silakan ganti URL di bawah ini dengan gambar screenshot aplikasimu yang di-upload ke folder GitHub)*
 
 <div align="center">
   <img src="https://via.placeholder.com/800x450.png?text=Screenshot+Aplikasi+Genisys+Di+Sini" alt="Screenshot Aplikasi" width="800"/>
