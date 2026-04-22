@@ -25,8 +25,7 @@ Proyek ini dikembangkan sebagai pemenuhan **Ujian Tengah Semester (UTS) Mata Kul
 - **Nama:** Suryahadi Purnama
 - **NIM:** 25051204402
 - **Divisi/Program Studi:** S1 Teknik Informatika, Universitas Negeri Surabaya
-- **Nama:** Leevi Qushai Ray Iftikhar
-- **NIM:** 2505120430
+- **Nama:** nama gw ray nim 390
 
 ---
 
