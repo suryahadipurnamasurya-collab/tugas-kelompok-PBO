@@ -60,7 +60,7 @@ Proyek ini mengimplementasikan 9 pilar utama Pemrograman Berorientasi Objek yang
 ---
 
 ## 🚀 Cara Menjalankan Aplikasi Lokal
-Bagi Anda yang ingin menguji coba aplikasi ini di perangkat lokal:
+Bagi Anda yang ingin menguji coba aplikasi ini di perangkat lokal (atau mengeklonenya):
 1. Pastikan **Java Development Kit (JDK) 8** atau versi lebih baru sudah terpasang di komputer Anda.
 2. *Clone repository* ini:
    ```bash
