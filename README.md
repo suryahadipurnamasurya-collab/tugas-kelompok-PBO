@@ -20,7 +20,6 @@ Proyek ini dikembangkan sebagai pemenuhan **Ujian Tengah Semester (UTS) Mata Kul
 
 ### 👨‍💻 Pengembang
 * **Nama:** tim dari unesa teknik informatika (2025 H)
-* **NIM:** 25051204402
 * **Divisi/Program Studi:** S1 Teknik Informatika, Universitas Negeri Surabaya
 
 ---
