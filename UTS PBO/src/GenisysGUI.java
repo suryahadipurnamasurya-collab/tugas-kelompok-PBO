@@ -155,7 +155,7 @@ public class GenisysGUI extends JFrame {
         identityLog.setForeground(new Color(0, 255, 0)); 
         identityLog.setText("SYSTEM BOOTING...\n" +
                           "Lab Pusat UNESA - Divisi Genetik\n" +
-                          "Nama Pembuat : Surya, Ray\n" +
+                          "Nama Pembuat : Surya, Ray, Muti\n" +
                           "NIM          : 25051204402\n" +
                           "Status       : DATABASE ONLINE. READY FOR INPUT.");
         panelHeader.add(identityLog, BorderLayout.WEST);
