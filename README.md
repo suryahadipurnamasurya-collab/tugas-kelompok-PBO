@@ -19,7 +19,7 @@
 Proyek ini dikembangkan sebagai pemenuhan **Ujian Tengah Semester (UTS) Mata Kuliah Pemrograman Berorientasi Objek (PBO)** di Universitas Negeri Surabaya (UNESA).
 
 ### 👨‍💻 Pengembang
-* **Nama:** Suryahadi Purnama
+* **Nama:** tim dari unesa teknik informatika (2025 H)
 * **NIM:** 25051204402
 * **Divisi/Program Studi:** S1 Teknik Informatika, Universitas Negeri Surabaya
 
@@ -60,7 +60,7 @@ Proyek ini mengimplementasikan 9 pilar utama Pemrograman Berorientasi Objek yang
 ---
 
 ## 🚀 Cara Menjalankan Aplikasi Lokal
-Bagi Anda yang ingin menguji coba aplikasi ini di perangkat lokal:
+Bagi Anda yang ingin menguji coba aplikasi ini di perangkat lokal (atau mengeklonenya):
 1. Pastikan **Java Development Kit (JDK) 8** atau versi lebih baru sudah terpasang di komputer Anda.
 2. *Clone repository* ini:
    ```bash
