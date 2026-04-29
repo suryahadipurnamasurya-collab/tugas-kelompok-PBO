@@ -2,7 +2,10 @@ import java.awt.*;
 import java.io.*;
 import java.net.URL;
 import javax.swing.*;
+<<<<<<< HEAD
 import javax.swing.table.DefaultTableCellRenderer;
+=======
+>>>>>>> 45c0715641bfd669511442c2b1dd63965ca89350
 import javax.swing.table.DefaultTableModel;
 
 interface DeteksiAnomali extends Serializable {

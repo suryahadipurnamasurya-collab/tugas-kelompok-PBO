@@ -21,7 +21,7 @@ Proyek ini dikembangkan sebagai pemenuhan **Ujian Tengah Semester (UTS) Mata Kul
 
 ### 👨‍💻 Pengembang
 
-- **Nama:** TIM Universitas Negeri Surabaya (2025 H)
+- TIM Universitas Negeri Surabaya (2025 H)
 - **Divisi/Program Studi:** S1 Teknik Informatika, Universitas Negeri Surabaya
 
 ---
