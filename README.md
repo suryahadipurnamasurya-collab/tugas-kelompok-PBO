@@ -1,5 +1,4 @@
 ﻿<div align="center">
-  <img src="https://cdn-icons-png.flaticon.com/512/2070/2070802.png" alt="Genisys Logo" width="120"/>
   <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Logo_UNESA.png/600px-Logo_UNESA.png" alt="UNESA Logo" width="120"/>
 
   <h1>🧬 GENISYS COMMAND CENTER 🧬</h1>
