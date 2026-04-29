@@ -1,9 +1,10 @@
-import java.awt.*;
-import java.net.URL; 
 import javax.swing.*;
-import javax.swing.table.DefaultTableModel; 
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.io.*;
+import java.net.URL;
 
-interface DeteksiAnomali {
+interface DeteksiAnomali extends Serializable {
     boolean cekMutasiBerbahaya();
     String getRekomendasiTindakan();
 }
@@ -12,11 +13,13 @@ abstract class SampelGenetik implements DeteksiAnomali {
     protected String idSampel;
     protected String sequenceDNA;
     protected String tanggalAnalisis;
+    protected String operator;
 
-    public SampelGenetik(String idSampel, String sequenceDNA, String tanggalAnalisis) {
+    public SampelGenetik(String idSampel, String sequenceDNA, String tanggalAnalisis, String operator) {
         this.idSampel = idSampel;
         this.sequenceDNA = sequenceDNA;
         this.tanggalAnalisis = tanggalAnalisis;
+        this.operator = operator;
     }
 
     public abstract double hitungPotensiMutasi();
@@ -25,11 +28,12 @@ abstract class SampelGenetik implements DeteksiAnomali {
 
     public String getIdSampel() { return idSampel; }
     public String getSequenceDNA() { return sequenceDNA; }
+    public String getOperator() { return operator; }
 }
 
 class DNAManusia extends SampelGenetik {
     private String golonganDarah;
-    public DNAManusia(String id, String seq, String tgl, String goldar) { super(id, seq, tgl); this.golonganDarah = goldar; }
+    public DNAManusia(String id, String seq, String tgl, String goldar, String op) { super(id, seq, tgl, op); this.golonganDarah = goldar; }
     @Override public double hitungPotensiMutasi() { return sequenceDNA.length() * 0.15; }
     @Override public String getTipe() { return "Human DNA"; }
     @Override public String getDetail() { return "Gol. Darah: " + golonganDarah; }
@@ -39,7 +43,7 @@ class DNAManusia extends SampelGenetik {
 
 class BakteriPathogen extends SampelGenetik {
     private double tingkatResistensiAntibiotik;
-    public BakteriPathogen(String id, String seq, String tgl, double res) { super(id, seq, tgl); this.tingkatResistensiAntibiotik = res; }
+    public BakteriPathogen(String id, String seq, String tgl, double res, String op) { super(id, seq, tgl, op); this.tingkatResistensiAntibiotik = res; }
     @Override public double hitungPotensiMutasi() { return sequenceDNA.length() * 1.5 + tingkatResistensiAntibiotik; }
     @Override public String getTipe() { return "Bacterial Pathogen"; }
     @Override public String getDetail() { return "Resistensi: " + tingkatResistensiAntibiotik + "%"; }
@@ -49,7 +53,7 @@ class BakteriPathogen extends SampelGenetik {
 
 class VirusDsDNA extends SampelGenetik {
     private String namaVirus;
-    public VirusDsDNA(String id, String seq, String tgl, String nama) { super(id, seq, tgl); this.namaVirus = nama; }
+    public VirusDsDNA(String id, String seq, String tgl, String nama, String op) { super(id, seq, tgl, op); this.namaVirus = nama; }
     @Override public double hitungPotensiMutasi() { return sequenceDNA.length() * 0.8; }
     @Override public String getTipe() { return "Virus dsDNA (I)"; }
     @Override public String getDetail() { return "Strain: " + namaVirus; }
@@ -59,7 +63,7 @@ class VirusDsDNA extends SampelGenetik {
 
 class VirusSsRNAPlus extends SampelGenetik {
     private String namaVirus;
-    public VirusSsRNAPlus(String id, String seq, String tgl, String nama) { super(id, seq, tgl); this.namaVirus = nama; }
+    public VirusSsRNAPlus(String id, String seq, String tgl, String nama, String op) { super(id, seq, tgl, op); this.namaVirus = nama; }
     @Override public double hitungPotensiMutasi() { return sequenceDNA.length() * 3.5; }
     @Override public String getTipe() { return "Virus (+)ssRNA (IV)"; }
     @Override public String getDetail() { return "Strain: " + namaVirus; }
@@ -69,7 +73,7 @@ class VirusSsRNAPlus extends SampelGenetik {
 
 class VirusRetrovirus extends SampelGenetik {
     private String namaVirus;
-    public VirusRetrovirus(String id, String seq, String tgl, String nama) { super(id, seq, tgl); this.namaVirus = nama; }
+    public VirusRetrovirus(String id, String seq, String tgl, String nama, String op) { super(id, seq, tgl, op); this.namaVirus = nama; }
     @Override public double hitungPotensiMutasi() { return sequenceDNA.length() * 8.0; }
     @Override public String getTipe() { return "Retrovirus (Group VI)"; }
     @Override public String getDetail() { return "Strain: " + namaVirus; }
@@ -80,15 +84,18 @@ class VirusRetrovirus extends SampelGenetik {
 class DatabaseLab {
     private SampelGenetik[] arrayDatabase;
     private int jumlahData;
+    private final String FILE_NAME = "database_genisys.dat";
 
     public DatabaseLab(int kapasitas) {
         arrayDatabase = new SampelGenetik[kapasitas];
         jumlahData = 0;
+        muatDataDariFile();
     }
 
     public void tambahData(SampelGenetik sampel) throws Exception {
         if (jumlahData >= arrayDatabase.length) throw new Exception("Database Penuh!");
         arrayDatabase[jumlahData++] = sampel;
+        simpanDataKeFile();
     }
 
     public SampelGenetik[] getAllData() {
@@ -117,6 +124,101 @@ class DatabaseLab {
         }
         return null;
     }
+
+    private void simpanDataKeFile() {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(FILE_NAME))) {
+            oos.writeObject(arrayDatabase);
+            oos.writeInt(jumlahData);
+        } catch (IOException e) {
+            System.out.println("Gagal menyimpan data: " + e.getMessage());
+        }
+    }
+
+    private void muatDataDariFile() {
+        File file = new File(FILE_NAME);
+        if (file.exists()) {
+            try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(FILE_NAME))) {
+                arrayDatabase = (SampelGenetik[]) ois.readObject();
+                jumlahData = ois.readInt();
+            } catch (IOException | ClassNotFoundException e) {
+                System.out.println("Gagal memuat data: " + e.getMessage());
+            }
+        }
+    }
+}
+class LoginGUI extends JFrame {
+    private final String[][] AKUN_KELOMPOK = {
+        {"SURYAHADI PURNAMA", "4402"},
+        {"LEEVI QUSHAI RAY IFTIKHAR", "4390"}, 
+        {"MANDRIVA RADITHYA CAHYADI", "4406"}, 
+        {"MUHAMMAD NADHIF FAIZURRAHMAN", "4388"},
+        {"SALSABILLA OKTAVIA RAMADHANI", "4393"},
+        {"FAUZAN RAMDHANI FAJRI", "4400"},
+        {"SAKARINA HARERA", "4407"},
+        {"MUTIARA NUR HIDAYAH", "4412"}
+    };
+
+    private JTextField txtUsername;
+    private JPasswordField txtPassword;
+
+    public LoginGUI() {
+        setTitle("GENISYS - Security Authentication");
+        setSize(400, 250);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+        setLayout(new BorderLayout());
+
+        JPanel panelUtama = new JPanel(new GridLayout(3, 1, 10, 10));
+        panelUtama.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+
+        JLabel lblTitle = new JLabel("<html><center><b>GENISYS SECURE LOGIN</b><br>Gunakan Nama & 4 Digit Akhir NIM</center></html>", SwingConstants.CENTER);
+        lblTitle.setFont(new Font("Arial", Font.BOLD, 14));
+        add(lblTitle, BorderLayout.NORTH);
+
+        JPanel panelForm = new JPanel(new GridLayout(2, 2, 5, 5));
+        panelForm.add(new JLabel("Username (Nama (CAPS)):"));
+        txtUsername = new JTextField();
+        panelForm.add(txtUsername);
+
+        panelForm.add(new JLabel("Password (4 Digit NIM):"));
+        txtPassword = new JPasswordField();
+        panelForm.add(txtPassword);
+        
+        panelUtama.add(panelForm);
+
+        JButton btnLogin = new JButton("LOGIN TO SYSTEM");
+        btnLogin.setBackground(new Color(41, 128, 185));
+        btnLogin.setForeground(Color.WHITE);
+        btnLogin.setFont(new Font("Arial", Font.BOLD, 12));
+        btnLogin.addActionListener(e -> prosesLogin());
+        
+        JPanel panelBtn = new JPanel();
+        panelBtn.add(btnLogin);
+        panelUtama.add(panelBtn);
+
+        add(panelUtama, BorderLayout.CENTER);
+    }
+
+    private void prosesLogin() {
+        String inputUser = txtUsername.getText();
+        String inputPass = new String(txtPassword.getPassword());
+        boolean loginSukses = false;
+
+        for (String[] akun : AKUN_KELOMPOK) {
+            if (akun[0].equalsIgnoreCase(inputUser) && akun[1].equals(inputPass)) {
+                loginSukses = true;
+                break;
+            }
+        }
+
+        if (loginSukses) {
+            JOptionPane.showMessageDialog(this, "Akses Diberikan. Selamat datang, " + inputUser + "!", "Login Sukses", JOptionPane.INFORMATION_MESSAGE);
+            new GenisysGUI(inputUser).setVisible(true);
+            this.dispose();
+        } else {
+            JOptionPane.showMessageDialog(this, "Akses Ditolak! Username atau NIM salah.", "Security Alert", JOptionPane.ERROR_MESSAGE);
+        }
+    }
 }
 
 public class GenisysGUI extends JFrame {
@@ -126,21 +228,22 @@ public class GenisysGUI extends JFrame {
     private JTextArea terminalLog;
     private JTextField txtId, txtSequence, txtTanggal, txtDetail;
     private JComboBox<String> comboTipe;
+    private String namaOperatorAktif;
 
-    public GenisysGUI() {
-        setTitle("GENISYS COMMAND CENTER - UNESA Division of Genetics");
-        setSize(1050, 780); 
+    public GenisysGUI(String namaOperator) {
+        this.namaOperatorAktif = namaOperator;
+
+        setTitle("GENISYS COMMAND CENTER - Logged in as: " + namaOperatorAktif);
+        setSize(1100, 780); 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null); 
+        setLocationRelativeTo(null);
         setLayout(new BorderLayout(5, 5));
 
         buatPanelHeader(); 
-
-        inisialisasiDataAwal();
         buatPanelInput(); 
         buatPanelTabelDanLog(); 
         
-        cetakTerminal("GENISYS SYSTEM READY.");
+        cetakTerminal("GENISYS SYSTEM READY. Operator Activating: " + namaOperatorAktif);
         refreshTable();
     }
 
@@ -153,15 +256,16 @@ public class GenisysGUI extends JFrame {
         identityLog.setEditable(false);
         identityLog.setBackground(new Color(20, 20, 20)); 
         identityLog.setForeground(new Color(0, 255, 0)); 
+        identityLog.setFont(new Font("Consolas", Font.BOLD, 14)); 
         identityLog.setText("SYSTEM BOOTING...\n" +
                           "Lab Pusat UNESA - Divisi Genetik\n" +
-                          "dibuat oleh  : Surya, Ray, Mutiara, Fauzan, Nadhif, Sakarina, Salsa, Mandriva\n" +
-                          "Status       : DATABASE ONLINE. READY FOR INPUT.");
+                          "Sistem Penyimpanan : PERMANENT STORAGE (I/O Active)\n" +
+                          "Operator Saat Ini  : " + namaOperatorAktif.toUpperCase() + "\n" +
+                          "Status             : DATABASE ONLINE. READY FOR INPUT.");
         panelHeader.add(identityLog, BorderLayout.WEST);
 
         JLabel logoLabel = new JLabel();
-        
-        String imageFileName = "/LogoUnesa.png";
+        String imageFileName = "/LogoUnesa.png"; 
         URL imageURL = GenisysGUI.class.getResource(imageFileName);
         
         if (imageURL != null) {
@@ -175,14 +279,10 @@ public class GenisysGUI extends JFrame {
             }
         } else {
             gagalLoadGambar(logoLabel);
-            System.err.println("Gagal memuat logo: Pastikan 'LogoUnesa.webp' berada di dalam folder 'src'.");
         }
-        
         logoLabel.setPreferredSize(new Dimension(80, 80)); 
         logoLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        
         panelHeader.add(logoLabel, BorderLayout.EAST);
-
         add(panelHeader, BorderLayout.NORTH);
     }
 
@@ -215,9 +315,9 @@ public class GenisysGUI extends JFrame {
         txtDetail = new JTextField(); panelInput.add(txtDetail);
 
         JButton btnSimpan = new JButton("<html><center>💾<br>ENCODE DATA</center></html>"); 
-        btnSimpan.setBackground(new Color(41, 128, 185));
+        btnSimpan.setBackground(new Color(41, 128, 185)); 
         btnSimpan.setForeground(Color.WHITE);
-        btnSimpan.setFont(new Font("Arial", Font.BOLD, 15));
+        btnSimpan.setFont(new Font("Arial", Font.BOLD, 15)); 
         btnSimpan.addActionListener(e -> simpanData());
         panelInput.add(btnSimpan);
 
@@ -225,12 +325,12 @@ public class GenisysGUI extends JFrame {
     }
 
     private void buatPanelTabelDanLog() {
-        String[] kolom = {"ID", "Klasifikasi", "Detail Khusus", "Potensi Mutasi (%)", "Status Bahaya", "Tindakan Karantina"};
+        String[] kolom = {"ID", "Diinput Oleh", "Klasifikasi", "Detail Khusus", "Mutasi (%)", "Status", "Tindakan"};
         tableModel = new DefaultTableModel(kolom, 0);
         table = new JTable(tableModel);
         table.setRowHeight(25);
         JScrollPane scrollTable = new JScrollPane(table);
-        scrollTable.setBorder(BorderFactory.createTitledBorder("Database Genetik"));
+        scrollTable.setBorder(BorderFactory.createTitledBorder("Database Genetik (Tersimpan Permanen)"));
 
         terminalLog = new JTextArea();
         terminalLog.setEditable(false);
@@ -246,19 +346,18 @@ public class GenisysGUI extends JFrame {
         JPanel panelAksi = new JPanel(new FlowLayout(FlowLayout.CENTER, 30, 10));
 
         JButton btnSort = new JButton("<html><center>📶<br>SORT</center></html>"); 
-        btnSort.setToolTipText("Urutkan dari yang paling berbahaya");
-        btnSort.setBackground(new Color(230, 126, 34));
+        btnSort.setPreferredSize(new Dimension(100, 50)); 
+        btnSort.setBackground(new Color(230, 126, 34)); 
         btnSort.setForeground(Color.WHITE);
         btnSort.setFont(new Font("Arial", Font.BOLD, 13));
         btnSort.addActionListener(e -> {
             databaseLab.urutkanDataBahaya();
             refreshTable();
-            cetakTerminal(">> ALGORITMA SORTING DIJALANKAN (Selection Sort berdasarkan Laju Mutasi).");
+            cetakTerminal(">> ALGORITMA SORTING DIJALANKAN (Selection Sort).");
         });
 
-        // Tombol Searching dengan Ikon Kaca Pembesar Unicode (🔍)
         JButton btnSearch = new JButton("<html><center>🔍<br>SEARCH</center></html>"); 
-        btnSearch.setToolTipText("Lacak ID Sampel spesifik");
+        btnSearch.setPreferredSize(new Dimension(110, 50)); 
         btnSearch.setBackground(new Color(155, 89, 182)); 
         btnSearch.setForeground(Color.WHITE);
         btnSearch.setFont(new Font("Arial", Font.BOLD, 13));
@@ -278,7 +377,7 @@ public class GenisysGUI extends JFrame {
         });
 
         JButton btnReset = new JButton("<html><center>🗑<br>RESET</center></html>"); 
-        btnReset.setToolTipText("Reset tampilan tabel");
+        btnReset.setPreferredSize(new Dimension(100, 50)); 
         btnReset.setBackground(new Color(149, 165, 166)); 
         btnReset.setForeground(Color.WHITE);
         btnReset.setFont(new Font("Arial", Font.BOLD, 13));
@@ -293,16 +392,6 @@ public class GenisysGUI extends JFrame {
         add(panelKanan, BorderLayout.CENTER);
     }
 
-    private void inisialisasiDataAwal() {
-        try {
-            databaseLab.tambahData(new DNAManusia("H-001", "ATCGGCTAGCTA", "30-03-2026", "O+"));
-            databaseLab.tambahData(new VirusDsDNA("V-HSV1", "ATCGTATA", "30-03-2026", "Herpes Simplex Virus"));
-            databaseLab.tambahData(new VirusSsRNAPlus("V-COV2", "AUCGUAGCUUA", "30-03-2026", "SARS-CoV-2 (COVID-19)"));
-            databaseLab.tambahData(new VirusRetrovirus("V-HIV1", "AUCGGCA", "29-03-2026", "Human Immunodeficiency Virus"));
-            databaseLab.tambahData(new BakteriPathogen("B-ECOLI", "GGCCTTTAAA", "29-03-2026", 85.5));
-        } catch (Exception e) { System.out.println("Error init: " + e.getMessage()); }
-    }
-
     private void simpanData() {
         try {
             if (txtId.getText().isEmpty() || txtSequence.getText().isEmpty() || txtDetail.getText().isEmpty()) {
@@ -311,16 +400,19 @@ public class GenisysGUI extends JFrame {
             }
             String id = txtId.getText(); String seq = txtSequence.getText(); String tgl = txtTanggal.getText(); String detail = txtDetail.getText(); int pilihan = comboTipe.getSelectedIndex();
             SampelGenetik sampelBaru;
+            
             switch (pilihan) {
-                case 0: sampelBaru = new DNAManusia(id, seq, tgl, detail); break;
-                case 1: try { double res = Double.parseDouble(detail); sampelBaru = new BakteriPathogen(id, seq, tgl, res); } catch (NumberFormatException ex) { JOptionPane.showMessageDialog(this, "Kolom detail Bakteri harus berupa ANGKA (Persentase)!", "Error", JOptionPane.ERROR_MESSAGE); return; } break;
-                case 2: sampelBaru = new VirusDsDNA(id, seq, tgl, detail); break;
-                case 3: sampelBaru = new VirusSsRNAPlus(id, seq, tgl, detail); break;
-                case 4: sampelBaru = new VirusRetrovirus(id, seq, tgl, detail); break;
+                case 0: sampelBaru = new DNAManusia(id, seq, tgl, detail, namaOperatorAktif); break;
+                case 1: try { double res = Double.parseDouble(detail); sampelBaru = new BakteriPathogen(id, seq, tgl, res, namaOperatorAktif); } catch (NumberFormatException ex) { JOptionPane.showMessageDialog(this, "Kolom detail Bakteri harus berupa ANGKA (Persentase)!", "Error", JOptionPane.ERROR_MESSAGE); return; } break;
+                case 2: sampelBaru = new VirusDsDNA(id, seq, tgl, detail, namaOperatorAktif); break;
+                case 3: sampelBaru = new VirusSsRNAPlus(id, seq, tgl, detail, namaOperatorAktif); break;
+                case 4: sampelBaru = new VirusRetrovirus(id, seq, tgl, detail, namaOperatorAktif); break;
                 default: throw new Exception("Tipe spesimen tidak valid.");
             }
-            databaseLab.tambahData(sampelBaru); refreshTable();
-            cetakTerminal(">> BERHASIL ENCODE: " + id + " ditambahkan ke database.");
+            
+            databaseLab.tambahData(sampelBaru);
+            refreshTable();
+            cetakTerminal(">> BERHASIL ENCODE: " + id + " ditambahkan ke database oleh " + namaOperatorAktif);
             txtId.setText(""); txtSequence.setText(""); txtDetail.setText("");
         } catch (Exception ex) { JOptionPane.showMessageDialog(this, ex.getMessage(), "System Error", JOptionPane.ERROR_MESSAGE); }
     }
@@ -332,7 +424,7 @@ public class GenisysGUI extends JFrame {
 
     private void tambahBarisKeTabel(SampelGenetik s) {
         String statusMutasi = s.cekMutasiBerbahaya() ? "⚠ KRITIS" : "AMAN";
-        Object[] baris = { s.getIdSampel(), s.getTipe(), s.getDetail(), String.format("%.2f", s.hitungPotensiMutasi()), statusMutasi, s.getRekomendasiTindakan() };
+        Object[] baris = { s.getIdSampel(), s.getOperator(), s.getTipe(), s.getDetail(), String.format("%.2f", s.hitungPotensiMutasi()), statusMutasi, s.getRekomendasiTindakan() };
         tableModel.addRow(baris);
     }
 
@@ -342,6 +434,6 @@ public class GenisysGUI extends JFrame {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new GenisysGUI().setVisible(true));
+        SwingUtilities.invokeLater(() -> new LoginGUI().setVisible(true));
     }
 }
