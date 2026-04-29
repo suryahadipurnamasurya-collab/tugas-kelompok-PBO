@@ -2,10 +2,7 @@ import java.awt.*;
 import java.io.*;
 import java.net.URL;
 import javax.swing.*;
-<<<<<<< HEAD
 import javax.swing.table.DefaultTableCellRenderer;
-=======
->>>>>>> 45c0715641bfd669511442c2b1dd63965ca89350
 import javax.swing.table.DefaultTableModel;
 
 interface DeteksiAnomali extends Serializable {
@@ -318,7 +315,7 @@ public class GenisysGUI extends JFrame {
         panelInput.add(new JLabel("Gol. Darah/Strain Virus:"));
         txtDetail = new JTextField(); panelInput.add(txtDetail);
 
-        JButton btnSimpan = new JButton("<html><center>沈<br>ENCODE DATA</center></html>"); 
+        JButton btnSimpan = new JButton("<html><center><br>ENCODE DATA</center></html>"); 
         btnSimpan.setBackground(new Color(41, 128, 185)); 
         btnSimpan.setForeground(Color.WHITE);
         btnSimpan.setFont(new Font("Arial", Font.BOLD, 15)); 
@@ -375,7 +372,7 @@ public class GenisysGUI extends JFrame {
 
         JPanel panelAksi = new JPanel(new FlowLayout(FlowLayout.CENTER, 30, 10));
 
-        JButton btnSearch = new JButton("<html><center>剥<br>SEARCH</center></html>"); 
+        JButton btnSearch = new JButton("<html><center><br>SEARCH</center></html>"); 
         btnSearch.setPreferredSize(new Dimension(110, 50)); 
         btnSearch.setBackground(new Color(155, 89, 182)); 
         btnSearch.setForeground(Color.WHITE);
@@ -395,7 +392,7 @@ public class GenisysGUI extends JFrame {
             }
         });
 
-        JButton btnReset = new JButton("<html><center>卵<br>RESET</center></html>"); 
+        JButton btnReset = new JButton("<html><center><br>RESET</center></html>"); 
         btnReset.setPreferredSize(new Dimension(100, 50)); 
         btnReset.setBackground(new Color(149, 165, 166)); 
         btnReset.setForeground(Color.WHITE);
