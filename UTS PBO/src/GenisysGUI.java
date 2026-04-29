@@ -1,8 +1,8 @@
-import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.io.*;
 import java.net.URL;
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 
 interface DeteksiAnomali extends Serializable {
     boolean cekMutasiBerbahaya();
