@@ -1,8 +1,9 @@
-import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.io.*;
 import java.net.URL;
+import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
 
 interface DeteksiAnomali extends Serializable {
     boolean cekMutasiBerbahaya();
@@ -314,7 +315,7 @@ public class GenisysGUI extends JFrame {
         panelInput.add(new JLabel("Gol. Darah/Strain Virus:"));
         txtDetail = new JTextField(); panelInput.add(txtDetail);
 
-        JButton btnSimpan = new JButton("<html><center>💾<br>ENCODE DATA</center></html>"); 
+        JButton btnSimpan = new JButton("<html><center>沈<br>ENCODE DATA</center></html>"); 
         btnSimpan.setBackground(new Color(41, 128, 185)); 
         btnSimpan.setForeground(Color.WHITE);
         btnSimpan.setFont(new Font("Arial", Font.BOLD, 15)); 
@@ -326,9 +327,35 @@ public class GenisysGUI extends JFrame {
 
     private void buatPanelTabelDanLog() {
         String[] kolom = {"ID", "Diinput Oleh", "Klasifikasi", "Detail Khusus", "Mutasi (%)", "Status", "Tindakan"};
-        tableModel = new DefaultTableModel(kolom, 0);
+        
+        // Modifikasi DefaultTableModel agar kolom Mutasi (%) diurutkan sebagai angka (Double)
+        tableModel = new DefaultTableModel(kolom, 0) {
+            @Override
+            public Class<?> getColumnClass(int columnIndex) {
+                if (columnIndex == 4) {
+                    return Double.class;
+                }
+                return String.class;
+            }
+        };
+        
         table = new JTable(tableModel);
         table.setRowHeight(25);
+        
+        // AKTIFKAN FITUR AUTO SORTING DI HEADER TABEL
+        table.setAutoCreateRowSorter(true); 
+
+        // Tambahkan format desimal untuk kolom Mutasi (%) agar tetap rapi saat ditampilkan
+        table.getColumnModel().getColumn(4).setCellRenderer(new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                if (value instanceof Double) {
+                    value = String.format("%.2f", (Double) value);
+                }
+                return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            }
+        });
+
         JScrollPane scrollTable = new JScrollPane(table);
         scrollTable.setBorder(BorderFactory.createTitledBorder("Database Genetik (Tersimpan Permanen)"));
 
@@ -345,18 +372,7 @@ public class GenisysGUI extends JFrame {
 
         JPanel panelAksi = new JPanel(new FlowLayout(FlowLayout.CENTER, 30, 10));
 
-        JButton btnSort = new JButton("<html><center>📶<br>SORT</center></html>"); 
-        btnSort.setPreferredSize(new Dimension(100, 50)); 
-        btnSort.setBackground(new Color(230, 126, 34)); 
-        btnSort.setForeground(Color.WHITE);
-        btnSort.setFont(new Font("Arial", Font.BOLD, 13));
-        btnSort.addActionListener(e -> {
-            databaseLab.urutkanDataBahaya();
-            refreshTable();
-            cetakTerminal(">> ALGORITMA SORTING DIJALANKAN (Selection Sort).");
-        });
-
-        JButton btnSearch = new JButton("<html><center>🔍<br>SEARCH</center></html>"); 
+        JButton btnSearch = new JButton("<html><center>剥<br>SEARCH</center></html>"); 
         btnSearch.setPreferredSize(new Dimension(110, 50)); 
         btnSearch.setBackground(new Color(155, 89, 182)); 
         btnSearch.setForeground(Color.WHITE);
@@ -376,14 +392,15 @@ public class GenisysGUI extends JFrame {
             }
         });
 
-        JButton btnReset = new JButton("<html><center>🗑<br>RESET</center></html>"); 
+        JButton btnReset = new JButton("<html><center>卵<br>RESET</center></html>"); 
         btnReset.setPreferredSize(new Dimension(100, 50)); 
         btnReset.setBackground(new Color(149, 165, 166)); 
         btnReset.setForeground(Color.WHITE);
         btnReset.setFont(new Font("Arial", Font.BOLD, 13));
         btnReset.addActionListener(e -> { refreshTable(); cetakTerminal(">> Tampilan tabel direset ke data penuh."); });
 
-        panelAksi.add(btnSort); panelAksi.add(btnSearch); panelAksi.add(btnReset);
+        panelAksi.add(btnSearch); 
+        panelAksi.add(btnReset);
 
         JPanel panelKanan = new JPanel(new BorderLayout());
         panelKanan.add(splitPane, BorderLayout.CENTER);
@@ -423,8 +440,9 @@ public class GenisysGUI extends JFrame {
     }
 
     private void tambahBarisKeTabel(SampelGenetik s) {
-        String statusMutasi = s.cekMutasiBerbahaya() ? "⚠ KRITIS" : "AMAN";
-        Object[] baris = { s.getIdSampel(), s.getOperator(), s.getTipe(), s.getDetail(), String.format("%.2f", s.hitungPotensiMutasi()), statusMutasi, s.getRekomendasiTindakan() };
+        String statusMutasi = s.cekMutasiBerbahaya() ? "笞 KRITIS" : "AMAN";
+        // Nilai s.hitungPotensiMutasi() kini dipassing sebagai angka (Double) asli, bukan format String
+        Object[] baris = { s.getIdSampel(), s.getOperator(), s.getTipe(), s.getDetail(), s.hitungPotensiMutasi(), statusMutasi, s.getRekomendasiTindakan() };
         tableModel.addRow(baris);
     }
 
