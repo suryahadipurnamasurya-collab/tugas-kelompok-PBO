@@ -1,5 +1,5 @@
 ﻿<div align="center">
-  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Logo_UNESA.png/600px-Logo_UNESA.png" alt="UNESA Logo" width="120"/>
+  <img src="https://i.imgur.com/ZRTYCGz.png" alt="UNESA Logo" width="120"/>
 
   <h1>🧬 GENISYS COMMAND CENTER 🧬</h1>
   <p><b>Sistem Analisis Jejak Genetik & Deteksi Mutasi Spesimen (Baltimore System)</b></p>
@@ -57,7 +57,7 @@ Proyek ini mengimplementasikan 9 pilar utama Pemrograman Berorientasi Objek yang
 ## 📸 Tampilan Antarmuka (Screenshots)
 
 <div align="center">
-  <img src="https://via.placeholder.com/800x450.png?text=Screenshot+Aplikasi+Genisys+Di+Sini" alt="Screenshot Aplikasi" width="800"/>
+  <img src="https://i.imgur.com/qFI1KvR.png" alt="Screenshot Aplikasi" width="800"/>
 </div>
 
 ---
@@ -67,7 +67,7 @@ Proyek ini mengimplementasikan 9 pilar utama Pemrograman Berorientasi Objek yang
 Bagi Anda yang ingin menguji coba aplikasi ini di perangkat lokal (atau mengeklonenya):
 
 1. Pastikan **Java Development Kit (JDK) 8** atau versi lebih baru sudah terpasang di komputer Anda.
-2. _Clone repository_ ini:
+2. _Clone repository_ ini melalui terminal:
    ```bash
-   git clone (https://github.com/suryahadipurnamasurya-collab/tugas-kelompok-PBO)](https://github.com/suryahadipurnamasurya-collab/tugas-kelompok-PBO/edit/main/README.md)
+   git clone [https://github.com/suryahadipurnamasurya-collab/tugas-kelompok-PBO.git](https://github.com/suryahadipurnamasurya-collab/tugas-kelompok-PBO.git)
    ```
