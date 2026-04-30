@@ -315,7 +315,7 @@ public class GenisysGUI extends JFrame {
         panelInput.add(new JLabel("Gol. Darah/Strain Virus:"));
         txtDetail = new JTextField(); panelInput.add(txtDetail);
 
-        JButton btnSimpan = new JButton("<html><center><br>ENCODE DATA</center></html>"); 
+        JButton btnSimpan = new JButton("<html><center>💾<br>ENCODE DATA</center></html>"); 
         btnSimpan.setBackground(new Color(41, 128, 185)); 
         btnSimpan.setForeground(Color.WHITE);
         btnSimpan.setFont(new Font("Arial", Font.BOLD, 15)); 
@@ -372,7 +372,7 @@ public class GenisysGUI extends JFrame {
 
         JPanel panelAksi = new JPanel(new FlowLayout(FlowLayout.CENTER, 30, 10));
 
-        JButton btnSearch = new JButton("<html><center><br>SEARCH</center></html>"); 
+        JButton btnSearch = new JButton("<html><center>🔍<br>SEARCH</center></html>"); 
         btnSearch.setPreferredSize(new Dimension(110, 50)); 
         btnSearch.setBackground(new Color(155, 89, 182)); 
         btnSearch.setForeground(Color.WHITE);
@@ -392,7 +392,7 @@ public class GenisysGUI extends JFrame {
             }
         });
 
-        JButton btnReset = new JButton("<html><center><br>RESET</center></html>"); 
+        JButton btnReset = new JButton("<html><center>🔄<br>RESET</center></html>"); 
         btnReset.setPreferredSize(new Dimension(100, 50)); 
         btnReset.setBackground(new Color(149, 165, 166)); 
         btnReset.setForeground(Color.WHITE);
@@ -440,7 +440,7 @@ public class GenisysGUI extends JFrame {
     }
 
     private void tambahBarisKeTabel(SampelGenetik s) {
-        String statusMutasi = s.cekMutasiBerbahaya() ? "笞 KRITIS" : "AMAN";
+        String statusMutasi = s.cekMutasiBerbahaya() ? "KRITIS" : "AMAN";
         // Nilai s.hitungPotensiMutasi() kini dipassing sebagai angka (Double) asli, bukan format String
         Object[] baris = { s.getIdSampel(), s.getOperator(), s.getTipe(), s.getDetail(), s.hitungPotensiMutasi(), statusMutasi, s.getRekomendasiTindakan() };
         tableModel.addRow(baris);
