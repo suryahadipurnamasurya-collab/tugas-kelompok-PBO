@@ -168,6 +168,15 @@ class LoginGUI extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
+try {
+    URL iconURL = LoginGUI.class.getResource("/Lorem Ipsum.png");
+    if (iconURL != null) {
+        Image icon = new ImageIcon(iconURL).getImage();
+        this.setIconImage(icon);
+    }
+} catch (Exception e) {
+    System.out.println("Gagal memuat icon taskbar: " + e.getMessage());
+}
 
         JPanel panelUtama = new JPanel(new GridLayout(3, 1, 10, 10));
         panelUtama.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
@@ -200,7 +209,7 @@ class LoginGUI extends JFrame {
         add(panelUtama, BorderLayout.CENTER);
     }
 
-    private void prosesLogin() {
+private void prosesLogin() {
         String inputUser = txtUsername.getText();
         String inputPass = new String(txtPassword.getPassword());
         boolean loginSukses = false;
@@ -213,9 +222,28 @@ class LoginGUI extends JFrame {
         }
 
         if (loginSukses) {
-            JOptionPane.showMessageDialog(this, "Akses Diberikan. Selamat datang, " + inputUser + "!", "Login Sukses", JOptionPane.INFORMATION_MESSAGE);
-            new GenisysGUI(inputUser).setVisible(true);
-            this.dispose();
+            JOptionPane optionPane = new JOptionPane(
+                "Akses Diberikan. Selamat datang, " + inputUser + "!\nLoading...",
+                JOptionPane.INFORMATION_MESSAGE,
+                JOptionPane.DEFAULT_OPTION,
+                null,
+                new Object[]{},
+                null
+            );
+
+            final JDialog dialog = optionPane.createDialog(this, "Login Sukses");
+            
+            Timer timer = new Timer(3000, e -> {
+                dialog.dispose(); 
+                new GenisysGUI(inputUser).setVisible(true); 
+                this.dispose();
+            });
+            
+            timer.setRepeats(false);
+            timer.start();
+            
+            dialog.setVisible(true);
+
         } else {
             JOptionPane.showMessageDialog(this, "Akses Ditolak! Username atau NIM salah.", "Security Alert", JOptionPane.ERROR_MESSAGE);
         }
@@ -233,6 +261,15 @@ public class GenisysGUI extends JFrame {
 
     public GenisysGUI(String namaOperator) {
         this.namaOperatorAktif = namaOperator;
+try {
+    URL iconURL = GenisysGUI.class.getResource("/Lorem Ipsum.png");
+    if (iconURL != null) {
+        Image icon = new ImageIcon(iconURL).getImage();
+        this.setIconImage(icon);
+    }
+} catch (Exception e) {
+    System.out.println("Gagal memuat icon taskbar: " + e.getMessage());
+}
 
         setTitle("GENISYS COMMAND CENTER - Logged in as: " + namaOperatorAktif);
         setSize(1100, 780); 
