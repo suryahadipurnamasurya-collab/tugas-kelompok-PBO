@@ -4,6 +4,7 @@ import java.net.URL;
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
 
 interface DeteksiAnomali extends Serializable {
     boolean cekMutasiBerbahaya();
@@ -147,6 +148,63 @@ class DatabaseLab {
         }
     }
 }
+
+// ==== KELAS BARU: CUSTOM RENDERER UNTUK HEADER TABEL ALA FILE MANAGER ====
+class CustomHeaderRenderer extends JPanel implements TableCellRenderer {
+    private JLabel lblText;
+    private JLabel lblIcon;
+
+    public CustomHeaderRenderer() {
+        setLayout(new BorderLayout());
+        // Memakai border default sistem agar terlihat menyatu
+        setBorder(UIManager.getBorder("TableHeader.cellBorder"));
+
+        lblText = new JLabel();
+        lblText.setHorizontalAlignment(SwingConstants.CENTER);
+        lblText.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
+
+        lblIcon = new JLabel(" ▼ ");
+        lblIcon.setFont(new Font("SansSerif", Font.BOLD, 10));
+        lblIcon.setForeground(Color.LIGHT_GRAY); // Warna samar saat tidak aktif
+        
+        // Membuat Garis Pemisah (Separator) di sebelah kiri ikon
+        lblIcon.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createMatteBorder(0, 1, 0, 0, Color.LIGHT_GRAY), // Garis vertikal
+            BorderFactory.createEmptyBorder(0, 5, 0, 5) // Jarak ke ikon
+        ));
+
+        add(lblText, BorderLayout.CENTER);
+        add(lblIcon, BorderLayout.EAST);
+    }
+
+    @Override
+    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+        lblText.setText(value != null ? value.toString() : "");
+        lblText.setFont(table.getTableHeader().getFont());
+
+        // Set default icon dan warna (Samar)
+        lblIcon.setText(" ▼ ");
+        lblIcon.setForeground(Color.LIGHT_GRAY);
+
+        // Ubah bentuk dan warna jika kolom ini sedang disortir
+        RowSorter<?> sorter = table.getRowSorter();
+        if (sorter != null && !sorter.getSortKeys().isEmpty()) {
+            RowSorter.SortKey sortKey = sorter.getSortKeys().get(0);
+            if (sortKey.getColumn() == table.convertColumnIndexToModel(column)) {
+                if (sortKey.getSortOrder() == SortOrder.ASCENDING) {
+                    lblIcon.setText(" ▲ ");
+                    lblIcon.setForeground(Color.BLACK); // Aktif (Hitam)
+                } else if (sortKey.getSortOrder() == SortOrder.DESCENDING) {
+                    lblIcon.setText(" ▼ ");
+                    lblIcon.setForeground(Color.BLACK); // Aktif (Hitam)
+                }
+            }
+        }
+        return this;
+    }
+}
+// =========================================================================
+
 class LoginGUI extends JFrame {
     private final String[][] AKUN_KELOMPOK = {
         {"SURYAHADI PURNAMA", "4402"},
@@ -365,7 +423,6 @@ try {
     private void buatPanelTabelDanLog() {
         String[] kolom = {"ID", "Diinput Oleh", "Klasifikasi", "Detail Khusus", "Mutasi (%)", "Status", "Tindakan"};
         
-        // Modifikasi DefaultTableModel agar kolom Mutasi (%) diurutkan sebagai angka (Double)
         tableModel = new DefaultTableModel(kolom, 0) {
             @Override
             public Class<?> getColumnClass(int columnIndex) {
@@ -379,10 +436,11 @@ try {
         table = new JTable(tableModel);
         table.setRowHeight(25);
         
-        // AKTIFKAN FITUR AUTO SORTING DI HEADER TABEL
         table.setAutoCreateRowSorter(true); 
 
-        // Tambahkan format desimal untuk kolom Mutasi (%) agar tetap rapi saat ditampilkan
+        // === MENGAPLIKASIKAN CUSTOM HEADER RENDERER ===
+        table.getTableHeader().setDefaultRenderer(new CustomHeaderRenderer());
+
         table.getColumnModel().getColumn(4).setCellRenderer(new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
@@ -478,7 +536,6 @@ try {
 
     private void tambahBarisKeTabel(SampelGenetik s) {
         String statusMutasi = s.cekMutasiBerbahaya() ? "KRITIS" : "AMAN";
-        // Nilai s.hitungPotensiMutasi() kini dipassing sebagai angka (Double) asli, bukan format String
         Object[] baris = { s.getIdSampel(), s.getOperator(), s.getTipe(), s.getDetail(), s.hitungPotensiMutasi(), statusMutasi, s.getRekomendasiTindakan() };
         tableModel.addRow(baris);
     }
