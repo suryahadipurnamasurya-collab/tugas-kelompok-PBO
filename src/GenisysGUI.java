@@ -176,32 +176,64 @@ class RoundedPanel extends JPanel {
 
 class ModernInput extends JTextField {
     public ModernInput() {
-        setOpaque(false); setForeground(AppTheme.TEXT_PRIMARY); setCaretColor(AppTheme.ACCENT_TEAL);
-        setFont(AppTheme.FONT_NORMAL); 
+        setOpaque(false);
+        setForeground(Color.black);
+        setCaretColor(Color.black);
+        setFont(AppTheme.FONT_NORMAL);
         setBorder(new EmptyBorder(6, 15, 6, 15));
     }
-    @Override protected void paintComponent(Graphics g) {
+
+    @Override
+    protected void paintComponent(Graphics g) {
         Graphics2D g2 = (Graphics2D) g.create();
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g2.setColor(AppTheme.BG_INPUT); g2.fill(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), 10, 10));
-        g2.setColor(AppTheme.BORDER_COLOR); g2.draw(new RoundRectangle2D.Double(0, 0, getWidth() - 1, getHeight() - 1, 10, 10));
-        g2.dispose(); super.paintComponent(g);
+        g2.setRenderingHint(
+            RenderingHints.KEY_ANTIALIASING,
+            RenderingHints.VALUE_ANTIALIAS_ON
+        );
+
+        // gambar background dulu
+        g2.setColor(AppTheme.BG_INPUT);
+        g2.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
+
+        g2.setColor(AppTheme.BORDER_COLOR);
+        g2.drawRoundRect(0, 0, getWidth()-1, getHeight()-1, 10, 10);
+
+        g2.dispose();
+
+        // baru gambar text
+        super.paintComponent(g);
     }
 }
 
 class ModernPassword extends JPasswordField {
     public ModernPassword() {
-        setOpaque(false); setForeground(AppTheme.TEXT_PRIMARY); setCaretColor(AppTheme.ACCENT_TEAL);
-        setFont(AppTheme.FONT_NORMAL); 
+        setOpaque(false);
+        setForeground(Color.black);
+        setCaretColor(Color.black);
+        setFont(AppTheme.FONT_NORMAL);
         setBorder(new EmptyBorder(6, 15, 6, 15));
         setEchoChar('•');
     }
-    @Override protected void paintComponent(Graphics g) {
+
+    @Override
+    protected void paintComponent(Graphics g) {
         Graphics2D g2 = (Graphics2D) g.create();
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g2.setColor(AppTheme.BG_INPUT); g2.fill(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), 10, 10));
-        g2.setColor(AppTheme.BORDER_COLOR); g2.draw(new RoundRectangle2D.Double(0, 0, getWidth() - 1, getHeight() - 1, 10, 10));
-        g2.dispose(); super.paintComponent(g);
+        g2.setRenderingHint(
+            RenderingHints.KEY_ANTIALIASING,
+            RenderingHints.VALUE_ANTIALIAS_ON
+        );
+
+        // gambar background dulu
+        g2.setColor(AppTheme.BG_INPUT);
+        g2.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
+
+        g2.setColor(AppTheme.BORDER_COLOR);
+        g2.drawRoundRect(0, 0, getWidth()-1, getHeight()-1, 10, 10);
+
+        g2.dispose();
+
+        // gambar text setelah background
+        super.paintComponent(g);
     }
 }
 
@@ -418,8 +450,14 @@ class LoginFrame extends JFrame {
         JLabel lblSub = new JLabel("Sign in to Medical Dashboard"); lblSub.setFont(AppTheme.FONT_NORMAL);
         lblSub.setForeground(AppTheme.TEXT_MUTED); lblSub.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        txtUser = new ModernInput(); txtUser.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
-        txtPass = new ModernPassword(); txtPass.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
+        txtUser = new ModernInput();
+        txtUser.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
+        txtUser.setText(""); // kosongkan
+        txtUser.setToolTipText("Masukkan nama lengkap dengan huruf kapital");
+
+        txtPass = new ModernPassword();
+        txtPass.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
+        txtPass.setToolTipText("Masukkan NIM");
 
         ModernBtn btnLogin = new ModernBtn("LOGIN", AppTheme.ACCENT_TEAL, AppTheme.ACCENT_TEAL_DARK);
         btnLogin.setMaximumSize(new Dimension(Integer.MAX_VALUE, 45));
@@ -442,13 +480,41 @@ class LoginFrame extends JFrame {
     }
     
     private void prosesLogin() {
-        String user = txtUser.getText().toUpperCase(); String pass = new String(txtPass.getPassword());
-        if (user.equals("FAUZAN RAMDHANI FAJRI") && pass.equals("4400")) {
-            new DashboardFrame(user).setVisible(true); this.dispose();
-        } else {
-            JOptionPane.showMessageDialog(this, "Akses Ditolak! Coba: FAUZAN RAMDHANI FAJRI / 4400");
+    String user = txtUser.getText().trim().toUpperCase();
+    String pass = new String(txtPass.getPassword()).trim();
+
+    // Database akun mahasiswa
+    String[][] akunMahasiswa = {
+        {"SURYAHADI PURNAMA", "4402"},
+        {"LEEVI QUSHAI RAY IFTIKHAR", "4390"},
+        {"MANDRIVA RADITHYA CAHYADI", "4406"},
+        {"SALSABILA OKTAVIA RAMADHANI", "4393"},
+        {"MUHAMMAD NADHIF FAIZURRAHMAN", "4388"},
+        {"FARHAN FAUZAN AZIMA", "4389"},
+        {"SAKARINA HARERA", "4407"},
+        {"MUTIARA NUR HIDAYAH", "4412"}
+    };
+
+    boolean loginBerhasil = false;
+
+    for (String[] akun : akunMahasiswa) {
+        if (user.equals(akun[0]) && pass.equals(akun[1])) {
+            loginBerhasil = true;
+            new DashboardFrame(user).setVisible(true);
+            this.dispose();
+            break;
         }
     }
+
+    if (!loginBerhasil) {
+        JOptionPane.showMessageDialog(
+            this,
+            "Username atau Password salah!",
+            "Login Gagal",
+            JOptionPane.ERROR_MESSAGE
+        );
+    }
+}
 }
 
 // ============================================================================
@@ -767,7 +833,21 @@ class DashboardFrame extends JFrame {
     }
 
     public static void main(String[] args) {
-        System.setProperty("awt.useSystemAAFontSettings", "on");
-        SwingUtilities.invokeLater(() -> new LoginFrame().setVisible(true));
+    try {
+        for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+            if ("Nimbus".equals(info.getName())) {
+                UIManager.setLookAndFeel(info.getClassName());
+                break;
+            }
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
     }
+
+    System.setProperty("awt.useSystemAAFontSettings", "on");
+
+    SwingUtilities.invokeLater(() -> {
+        new LoginFrame().setVisible(true);
+    });
+}
 }
