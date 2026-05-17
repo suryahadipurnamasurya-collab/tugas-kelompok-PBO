@@ -1,0 +1,1 @@
+        donutChart.setPercentage(percent);

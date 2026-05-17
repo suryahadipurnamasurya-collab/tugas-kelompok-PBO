@@ -284,51 +284,217 @@ class DarkScrollBarUI extends BasicScrollBarUI {
 // ============================================================================
 
 class DonutChart extends JPanel {
-    private int percentage;
-    public DonutChart() { setOpaque(false); }
-    public void setPercentage(int p) { this.percentage = p; repaint(); }
-    @Override protected void paintComponent(Graphics g) {
+    private int[] values = new int[5];
+    private int percentage = 0;
+
+    private Color[] colors = {
+        new Color(173,255,47),   // Human DNA
+        new Color(32,178,170),   // Bacterial
+        new Color(0,255,127),    // dsDNA
+        new Color(34,139,34),    // ssRNA
+        new Color(0,100,0)       // Retrovirus
+    };
+
+    private String[] labels = {
+        "Human DNA",
+        "Bacterial Pathogen",
+        "Virus dsDNA (I)",
+        "Virus (+)ssRNA (IV)",
+        "Retrovirus (VI)"
+    };
+
+    public DonutChart() {
+        setOpaque(false);
+    }
+
+    public void setPercentage(int percentage) {
+        this.percentage = Math.max(0, Math.min(100, percentage));
+        repaint();
+    }
+
+    public void updateData(int[] data) {
+        this.values = data;
+        repaint();
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
         super.paintComponent(g);
+
         Graphics2D g2 = (Graphics2D) g.create();
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        int size = Math.min(getWidth(), getHeight()) - 40;
-        int x = (getWidth() - size) / 2; int y = (getHeight() - size) / 2;
-        
-        g2.setStroke(new BasicStroke(18f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-        g2.setColor(AppTheme.BORDER_COLOR); g2.drawArc(x, y, size, size, 0, 360);
-        g2.setColor(AppTheme.ACCENT_TEAL);
-        int angle = (int) (360 * (percentage / 100.0));
-        g2.drawArc(x, y, size, size, 90, -angle);
-        
-        g2.setColor(AppTheme.TEXT_PRIMARY); g2.setFont(new Font("SansSerif", Font.BOLD, 22));
-        String text = percentage + "%"; FontMetrics fm = g2.getFontMetrics();
-        g2.drawString(text, x + (size - fm.stringWidth(text))/2, y + (size/2) + 8);
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_ON);
+
+        int total = 0;
+        for(int v : values) total += v;
+
+        if(total == 0) {
+            g2.setColor(Color.GRAY);
+            g2.setFont(new Font("SansSerif", Font.BOLD, 18));
+            String empty = "No Data";
+            FontMetrics fmEmpty = g2.getFontMetrics();
+            g2.drawString(empty, (getWidth() - fmEmpty.stringWidth(empty)) / 2, getHeight() / 2);
+            g2.dispose();
+            return;
+        }
+
+        int size = Math.min(getWidth(), getHeight()) - 80;
+        if (size < 100) size = Math.min(getWidth(), getHeight()) - 40;
+        int x = (getWidth() - size) / 2;
+        int y = (getHeight() - size) / 2 - 20;
+        int thickness = Math.max(24, size / 10);
+
+        g2.setStroke(new BasicStroke(thickness, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        g2.setColor(AppTheme.BORDER_COLOR);
+        g2.drawArc(x, y, size, size, 0, 360);
+
+        int startAngle = 90;
+        for (int i = 0; i < values.length; i++) {
+            if (values[i] == 0) continue;
+
+            int angle = (int) Math.round((values[i] * 360.0) / total);
+            g2.setColor(colors[i]);
+            g2.drawArc(x, y, size, size, startAngle, -angle);
+            startAngle -= angle;
+        }
+
+        int innerSize = size - thickness * 2;
+        if (innerSize > 0) {
+            g2.setColor(AppTheme.BG_CARD);
+            g2.fillOval(x + thickness, y + thickness, innerSize, innerSize);
+        }
+
+        g2.setColor(Color.WHITE);
+        g2.setFont(new Font("SansSerif", Font.BOLD, Math.max(24, thickness)));
+        String totalText = String.valueOf(total);
+        FontMetrics fmTotal = g2.getFontMetrics();
+        int totalX = x + (size - fmTotal.stringWidth(totalText)) / 2;
+        int totalY = y + (size + fmTotal.getAscent()) / 2 - 10;
+        g2.drawString(totalText, totalX, totalY);
+
+        g2.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        String labelText = "Total Specimen";
+        FontMetrics fmLabel = g2.getFontMetrics();
+        int labelX = x + (size - fmLabel.stringWidth(labelText)) / 2;
+        int labelY = totalY + fmLabel.getHeight() + 5;
+        g2.drawString(labelText, labelX, labelY);
+
+        int legendY = y + size + 20;
+        int legendX = x + (size - 220) / 2;
+        for (int i = 0; i < labels.length; i++) {
+            g2.setColor(colors[i]);
+            g2.fillRoundRect(legendX, legendY + (i * 28), 18, 18, 5, 5);
+            g2.setColor(Color.WHITE);
+            g2.setFont(new Font("SansSerif", Font.PLAIN, 13));
+            g2.drawString(labels[i], legendX + 26, legendY + (i * 28) + 14);
+        }
+
         g2.dispose();
     }
 }
 
 class BarChart extends JPanel {
-    private int[] data; private int maxVal;
-    public BarChart() { setOpaque(false); }
-    public void updateData(int[] d) { 
-        this.data = d; 
-        maxVal = 1; for(int v : d) if(v > maxVal) maxVal = v;
-        repaint(); 
+    private int[] data;
+    private int maxVal;
+
+    private final String[] shortLabels = {
+        "H",
+        "B",
+        "D",
+        "S",
+        "R"
+    };
+
+    public BarChart() {
+        setOpaque(false);
     }
-    @Override protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        if(data == null) return;
-        Graphics2D g2 = (Graphics2D) g.create();
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        int w = getWidth(), h = getHeight(); int barWidth = 15;
-        int gap = (w - (data.length * barWidth)) / (data.length + 1);
-        
-        for (int i = 0; i < data.length; i++) {
-            int barHeight = (int) (((double)data[i] / maxVal) * (h - 30));
-            int x = gap + (i * (barWidth + gap)); int y = h - barHeight - 20;
-            g2.setColor(AppTheme.BORDER_COLOR); g2.fillRoundRect(x, 20, barWidth, h - 40, 8, 8);
-            g2.setColor(AppTheme.ACCENT_TEAL_DARK); g2.fillRoundRect(x, y, barWidth, barHeight, 8, 8);
+
+    public void updateData(int[] d) {
+        this.data = d;
+        maxVal = 1;
+
+        for (int v : d) {
+            if (v > maxVal) {
+                maxVal = v;
+            }
         }
+
+        repaint();
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+
+        if (data == null) return;
+
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setRenderingHint(
+            RenderingHints.KEY_ANTIALIASING,
+            RenderingHints.VALUE_ANTIALIAS_ON
+        );
+
+        int w = getWidth();
+        int h = getHeight();
+
+        int barWidth = 20;
+        int gap = (w - (data.length * barWidth)) / (data.length + 1);
+
+        for (int i = 0; i < data.length; i++) {
+            int barHeight = (int)(((double)data[i] / maxVal) * (h - 60));
+
+            int x = gap + (i * (barWidth + gap));
+            int y = h - barHeight - 40;
+
+            // background bar
+            g2.setColor(AppTheme.BORDER_COLOR);
+            g2.fillRoundRect(
+                x,
+                20,
+                barWidth,
+                h - 60,
+                8,
+                8
+            );
+
+            // active bar
+            g2.setColor(AppTheme.ACCENT_TEAL_DARK);
+            g2.fillRoundRect(
+                x,
+                y,
+                barWidth,
+                barHeight,
+                8,
+                8
+            );
+
+            // angka jumlah di bawah bar
+            g2.setColor(Color.WHITE);
+            g2.setFont(new Font("SansSerif", Font.BOLD, 12));
+
+            String valueText = String.valueOf(data[i]);
+            FontMetrics fm = g2.getFontMetrics();
+
+            g2.drawString(
+                valueText,
+                x + (barWidth - fm.stringWidth(valueText)) / 2,
+                h - 15
+            );
+
+            // label singkat
+            g2.setColor(AppTheme.TEXT_MUTED);
+            g2.setFont(new Font("SansSerif", Font.PLAIN, 10));
+
+            String label = shortLabels[i];
+            FontMetrics fm2 = g2.getFontMetrics();
+
+            g2.drawString(
+                label,
+                x + (barWidth - fm2.stringWidth(label)) / 2,
+                h - 2
+            );
+        }
+
         g2.dispose();
     }
 }
@@ -557,8 +723,8 @@ class DashboardFrame extends JFrame {
         
         cardPanel.add(buildDashboardView(), "DASHBOARD");
         cardPanel.add(buildRecordsView(), "RECORDS");
-        cardPanel.add(buildEmptyView("Medical Team features coming soon..."), "TEAM");
-        cardPanel.add(buildEmptyView("Medications inventory coming soon..."), "MEDS");
+        cardPanel.add(buildTeamView(), "TEAM");
+        cardPanel.add(buildMedicationsView(), "MEDS");
         
         mainArea.add(cardPanel, BorderLayout.CENTER);
         add(mainArea, BorderLayout.CENTER);
@@ -582,7 +748,7 @@ class DashboardFrame extends JFrame {
         menu.add(Box.createVerticalStrut(10));
         menu.add(createNavBtn("Medical Team", "TEAM", false));
         menu.add(Box.createVerticalStrut(10));
-        menu.add(createNavBtn("Patients / Specs", "RECORDS", false));
+        menu.add(createNavBtn("data Virus(DNA/RNA)", "RECORDS", false));
         menu.add(Box.createVerticalStrut(10));
         menu.add(createNavBtn("Medications", "MEDS", false));
 
@@ -613,39 +779,39 @@ class DashboardFrame extends JFrame {
         return p;
     }
 
-    private JPanel buildTopBar() {
-        JPanel topbar = new JPanel(new BorderLayout());
-        topbar.setOpaque(false); topbar.setBorder(new EmptyBorder(25, 30, 10, 30));
+private JPanel buildTopBar() {
+    JPanel topbar = new JPanel(new BorderLayout());
+    topbar.setOpaque(false);
+    topbar.setBorder(new EmptyBorder(25, 30, 10, 30));
 
-        JLabel title = new JLabel("Overview"); title.setFont(AppTheme.FONT_H1); title.setForeground(AppTheme.TEXT_PRIMARY);
+    JLabel title = new JLabel("Overview");
+    title.setFont(AppTheme.FONT_H1);
+    title.setForeground(AppTheme.TEXT_PRIMARY);
 
-        JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 0)); right.setOpaque(false);
-        
-        searchField = new ModernInput();
-        searchField.setPreferredSize(new Dimension(250, 40));
-        searchField.setText("Search records...");
-        
-        // Listener Pencarian Global
-        searchField.getDocument().addDocumentListener(new DocumentListener() {
-            public void insertUpdate(DocumentEvent e) { filterTable(); }
-            public void removeUpdate(DocumentEvent e) { filterTable(); }
-            public void changedUpdate(DocumentEvent e) { filterTable(); }
-        });
-        searchField.addFocusListener(new FocusAdapter() {
-            public void focusGained(FocusEvent e) { if(searchField.getText().equals("Search records...")) searchField.setText(""); }
-        });
+    JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 0));
+    right.setOpaque(false);
 
-        RoundedPanel profileBadge = new RoundedPanel(20, AppTheme.BG_CARD);
-        profileBadge.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 5));
-        JLabel lblName = new JLabel("👤 " + operatorName);
-        lblName.setForeground(AppTheme.TEXT_PRIMARY); lblName.setFont(AppTheme.FONT_BOLD);
-        profileBadge.add(lblName);
+    // tetap dibuat supaya filterTable tidak error
+    searchField = new ModernInput();
+    searchField.setText("");
 
-        right.add(searchField); right.add(profileBadge);
-        topbar.add(title, BorderLayout.WEST); topbar.add(right, BorderLayout.EAST);
-        return topbar;
-    }
+    RoundedPanel profileBadge = new RoundedPanel(20, AppTheme.BG_CARD);
+    profileBadge.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 5));
 
+    JLabel lblName = new JLabel("👤 " + operatorName);
+    lblName.setForeground(AppTheme.TEXT_PRIMARY);
+    lblName.setFont(AppTheme.FONT_BOLD);
+
+    profileBadge.add(lblName);
+
+    // hanya tampilkan profile
+    right.add(profileBadge);
+
+    topbar.add(title, BorderLayout.WEST);
+    topbar.add(right, BorderLayout.EAST);
+
+    return topbar;
+}
     private JScrollPane buildDashboardView() {
         JPanel scrollContent = new JPanel();
         scrollContent.setLayout(new BoxLayout(scrollContent, BoxLayout.Y_AXIS));
@@ -658,19 +824,65 @@ class DashboardFrame extends JFrame {
         JLabel lblMain = new JLabel("Check Specimen Analytics!"); lblMain.setForeground(Color.WHITE); lblMain.setFont(new Font("SansSerif", Font.BOLD, 28));
         welcomeCard.add(lblGreeting, BorderLayout.NORTH); welcomeCard.add(lblMain, BorderLayout.CENTER);
 
-        JPanel statsPanel = new JPanel(new GridLayout(2, 1, 0, 15)); statsPanel.setOpaque(false); statsPanel.setPreferredSize(new Dimension(300, 0));
-        RoundedPanel p1 = new RoundedPanel(15, AppTheme.BG_CARD); p1.setLayout(new BoxLayout(p1, BoxLayout.Y_AXIS)); p1.setBorder(new EmptyBorder(15, 20, 15, 20));
-        lblTotal = new JLabel("0"); lblTotal.setFont(new Font("SansSerif", Font.BOLD, 24)); lblTotal.setForeground(AppTheme.TEXT_PRIMARY);
-        JLabel t1 = new JLabel("Total Database"); t1.setFont(AppTheme.FONT_NORMAL); t1.setForeground(AppTheme.TEXT_MUTED);
-        p1.add(lblTotal); p1.add(t1);
+        JPanel statsPanel = new JPanel(new GridLayout(2,1,0,15));
+        statsPanel.setOpaque(false);
+        statsPanel.setPreferredSize(new Dimension(380,0));
 
-        RoundedPanel p2 = new RoundedPanel(15, AppTheme.BG_CARD); p2.setLayout(new BoxLayout(p2, BoxLayout.Y_AXIS)); p2.setBorder(new EmptyBorder(15, 20, 15, 20));
-        lblCritical = new JLabel("0"); lblCritical.setFont(new Font("SansSerif", Font.BOLD, 24)); lblCritical.setForeground(AppTheme.ACCENT_RED);
-        JLabel t2 = new JLabel("Critical Anomalies"); t2.setFont(AppTheme.FONT_NORMAL); t2.setForeground(AppTheme.TEXT_MUTED);
-        p2.add(lblCritical); p2.add(t2);
-        statsPanel.add(p1); statsPanel.add(p2);
+        // CARD TOTAL
+        RoundedPanel p1 = new RoundedPanel(20, AppTheme.BG_CARD);
+        p1.setLayout(new BorderLayout());
+        p1.setBorder(new EmptyBorder(15,20,15,20));
 
-        heroRow.add(welcomeCard, BorderLayout.CENTER); heroRow.add(statsPanel, BorderLayout.EAST);
+        JPanel totalWrap = new JPanel(new FlowLayout(FlowLayout.LEFT,15,5));
+        totalWrap.setOpaque(false);
+
+        JLabel icon1 = new JLabel("📋");
+        icon1.setFont(new Font("SansSerif", Font.PLAIN, 28));
+
+        lblTotal = new JLabel("0");
+        lblTotal.setFont(new Font("SansSerif", Font.BOLD, 36));
+        lblTotal.setForeground(Color.WHITE);
+
+JLabel totalDesc = new JLabel("<html>Jumlah virus (DNA/RNA)<br>yang telah di inputkan</html>");
+totalDesc.setForeground(Color.WHITE);
+totalDesc.setFont(AppTheme.FONT_NORMAL);
+
+totalWrap.add(icon1);
+totalWrap.add(lblTotal);
+totalWrap.add(totalDesc);
+
+p1.add(totalWrap, BorderLayout.CENTER);
+
+
+// CARD CRITICAL
+RoundedPanel p2 = new RoundedPanel(20, AppTheme.BG_CARD);
+p2.setLayout(new BorderLayout());
+p2.setBorder(new EmptyBorder(15,20,15,20));
+
+JPanel criticalWrap = new JPanel(new FlowLayout(FlowLayout.LEFT,15,5));
+criticalWrap.setOpaque(false);
+
+JLabel icon2 = new JLabel("⚠");
+icon2.setFont(new Font("SansSerif", Font.PLAIN, 28));
+icon2.setForeground(Color.RED);
+
+lblCritical = new JLabel("0");
+lblCritical.setFont(new Font("SansSerif", Font.BOLD, 36));
+lblCritical.setForeground(AppTheme.ACCENT_RED);
+
+JLabel criticalDesc = new JLabel("<html>Virus (DNA/RNA)<br>yang harus cepat diatasi</html>");
+criticalDesc.setForeground(Color.WHITE);
+criticalDesc.setFont(AppTheme.FONT_NORMAL);
+
+criticalWrap.add(icon2);
+criticalWrap.add(lblCritical);
+criticalWrap.add(criticalDesc);
+
+p2.add(criticalWrap, BorderLayout.CENTER);
+
+statsPanel.add(p1);
+statsPanel.add(p2); 
+statsPanel.setOpaque(false); statsPanel.setPreferredSize(new Dimension(300, 0));
 
         JPanel chartRow = new JPanel(new GridLayout(1, 3, 20, 0)); chartRow.setOpaque(false); chartRow.setPreferredSize(new Dimension(0, 250));
         
@@ -695,28 +907,39 @@ class DashboardFrame extends JFrame {
         return scroll;
     }
 
-    private JPanel buildRecordsView() {
+private JPanel buildRecordsView() {
         JPanel wrapper = new JPanel(new BorderLayout()); wrapper.setOpaque(false); wrapper.setBorder(new EmptyBorder(20, 30, 30, 30));
         RoundedPanel tableCard = new RoundedPanel(20, AppTheme.BG_CARD); tableCard.setLayout(new BorderLayout(0, 15)); tableCard.setBorder(new EmptyBorder(20, 20, 20, 20));
 
         JPanel header = new JPanel(new BorderLayout()); header.setOpaque(false);
         JLabel title = new JLabel("Patients & Specimens Database"); title.setFont(AppTheme.FONT_H2); title.setForeground(AppTheme.TEXT_PRIMARY);
-        
+
+        // --- SEARCH khusus Virus (cari Specimen ID / id virus) ---
+        JPanel headerRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        headerRight.setOpaque(false);
+
+        ModernInput virusIdSearch = new ModernInput();
+        virusIdSearch.setPreferredSize(new Dimension(260, 35));
+        virusIdSearch.setToolTipText("Cari ID virus...");
+
         ModernBtn btnAdd = new ModernBtn("+ Add Record", AppTheme.ACCENT_TEAL, AppTheme.ACCENT_TEAL_DARK);
         btnAdd.setPreferredSize(new Dimension(120, 35));
         btnAdd.addActionListener(e -> panggilFormAdd());
 
-        header.add(title, BorderLayout.WEST); header.add(btnAdd, BorderLayout.EAST);
+        header.add(title, BorderLayout.WEST);
+        headerRight.add(virusIdSearch);
+        headerRight.add(btnAdd);
+        header.add(headerRight, BorderLayout.EAST);
 
         String[] kolom = {"Specimen ID", "Date", "Doctor / Operator", "Class", "Details", "Status"};
         tableModel = new DefaultTableModel(kolom, 0) { @Override public boolean isCellEditable(int r, int c) { return false; } };
 
         JTable table = new JTable(tableModel); table.setRowHeight(45); table.setFont(AppTheme.FONT_NORMAL);
         table.setBackground(AppTheme.BG_CARD); table.setForeground(AppTheme.TEXT_PRIMARY); table.setShowGrid(false); table.setIntercellSpacing(new Dimension(0, 0));
-        
+
         table.setSelectionBackground(AppTheme.ACCENT_TEAL_DARK);
         table.setSelectionForeground(Color.WHITE);
-        
+
         table.getTableHeader().setBackground(AppTheme.BG_CARD); table.getTableHeader().setForeground(AppTheme.TEXT_MUTED);
         table.getTableHeader().setFont(AppTheme.FONT_BOLD); table.getTableHeader().setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, AppTheme.BORDER_COLOR));
         table.getTableHeader().setPreferredSize(new Dimension(0, 45));
@@ -726,7 +949,7 @@ class DashboardFrame extends JFrame {
         table.setAutoCreateRowSorter(true);
         TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(tableModel);
         table.setRowSorter(sorter);
-        
+
         // Custom Comparator untuk Kolom Tanggal (Index 1) agar diurutkan berdasar Waktu, bukan Abjad
         sorter.setComparator(1, new Comparator<String>() {
             SimpleDateFormat f = new SimpleDateFormat("dd MMM, yyyy");
@@ -742,6 +965,39 @@ class DashboardFrame extends JFrame {
             }
         });
         // --------------------------------------------------------
+
+        // --- Isi data awal ---
+        for (SampelGenetik s : db.getAllData()) {
+            String stat = s.cekMutasiBerbahaya() ? "Critical" : "Active";
+            tableModel.addRow(new Object[]{s.getIdSampel(), s.getTanggal(), s.getOperator(), s.getTipe(), s.getDetail(), stat});
+        }
+
+        // --- Filter: hanya baris yang class-nya mengandung 'Virus' dan id-nya sesuai query ---
+        virusIdSearch.getDocument().addDocumentListener(new DocumentListener() {
+            @Override public void insertUpdate(DocumentEvent e) { apply(); }
+            @Override public void removeUpdate(DocumentEvent e) { apply(); }
+            @Override public void changedUpdate(DocumentEvent e) { apply(); }
+
+            private void apply() {
+                String q = virusIdSearch.getText() == null ? "" : virusIdSearch.getText().trim().toLowerCase();
+
+                if (q.isEmpty()) {
+                    sorter.setRowFilter(null);
+                    return;
+                }
+
+                sorter.setRowFilter(new RowFilter<DefaultTableModel, Integer>() {
+                    @Override
+                    public boolean include(Entry<? extends DefaultTableModel, ? extends Integer> entry) {
+                        String id = String.valueOf(entry.getValue(0)).toLowerCase();
+                        String clazz = String.valueOf(entry.getValue(3)).toLowerCase();
+                        // Pastikan ini data virus (DNA/RNA)
+                        boolean isVirus = clazz.contains("virus");
+                        return isVirus && id.contains(q);
+                    }
+                });
+            }
+        });
 
         JScrollPane scroll = new JScrollPane(table); scroll.getViewport().setBackground(AppTheme.BG_CARD); scroll.setBorder(BorderFactory.createEmptyBorder());
         scroll.getVerticalScrollBar().setUI(new DarkScrollBarUI());
@@ -803,6 +1059,288 @@ class DashboardFrame extends JFrame {
         }
     }
 
+    private JPanel buildTeamView() {
+        JPanel wrapper = new JPanel(new BorderLayout());
+        wrapper.setOpaque(false);
+        wrapper.setBorder(new EmptyBorder(20, 30, 30, 30));
+
+        JPanel top = new JPanel(new BorderLayout());
+        top.setOpaque(false);
+        JLabel title = new JLabel("Medical Team & Researchers");
+        title.setFont(AppTheme.FONT_H2);
+        title.setForeground(AppTheme.TEXT_PRIMARY);
+
+        JPanel topRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        topRight.setOpaque(false);
+
+        ModernInput searchDokter = new ModernInput();
+        searchDokter.setPreferredSize(new Dimension(240, 40));
+        searchDokter.setText("");
+        searchDokter.setToolTipText("Cari nama dokter...");
+
+        topRight.add(searchDokter);
+
+        top.add(title, BorderLayout.WEST);
+        top.add(topRight, BorderLayout.EAST);
+
+        RoundedPanel tableCard = new RoundedPanel(20, AppTheme.BG_CARD);
+        tableCard.setLayout(new BorderLayout(0, 15));
+        tableCard.setBorder(new EmptyBorder(20, 20, 20, 20));
+
+        String[] kolom = {"ID Dokter", "Nama", "Spesialisasi", "Status", "Shift", "No. Kontak"};
+        DefaultTableModel teamModel = new DefaultTableModel(kolom, 0) {
+            @Override public boolean isCellEditable(int r, int c) { return false; }
+        };
+
+
+
+        // Sample Medical Team Data
+        String[][] teamData = {
+            {"DR001", "Prof. Dr. Surya", "Virologist", "Active", "Pagi", "+62-812-3456-7890"},
+            {"DR002", "Dr Tirta", "Geneticist", "On Break", "Malam", "+62-821-5678-9012"},
+            {"DR003", "Dr. Ikhsan", "Microbiologist", "Active", "Siang", "+62-813-9012-3456"},
+            {"DR004", "Dr. Gia", "Immunologist", "Emergency", "Pagi", "+62-822-3456-7890"}
+        };
+
+        for (String[] row : teamData) {
+            teamModel.addRow(row);
+        }
+
+        JTable table = new JTable(teamModel);
+        table.setRowHeight(45);
+        table.setFont(AppTheme.FONT_NORMAL);
+        table.setBackground(AppTheme.BG_CARD);
+        table.setForeground(AppTheme.TEXT_PRIMARY);
+        table.setShowGrid(false);
+        table.setIntercellSpacing(new Dimension(0, 0));
+        table.setSelectionBackground(AppTheme.ACCENT_TEAL_DARK);
+        table.setSelectionForeground(Color.WHITE);
+
+        table.getTableHeader().setBackground(AppTheme.BG_CARD);
+        table.getTableHeader().setForeground(AppTheme.TEXT_MUTED);
+        table.getTableHeader().setFont(AppTheme.FONT_BOLD);
+        table.getTableHeader().setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, AppTheme.BORDER_COLOR));
+        table.getTableHeader().setPreferredSize(new Dimension(0, 45));
+        ((DefaultTableCellRenderer)table.getTableHeader().getDefaultRenderer()).setHorizontalAlignment(JLabel.LEFT);
+
+        // Custom Cell Renderer for Status Column
+        table.getColumnModel().getColumn(3).setCellRenderer(new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                JLabel label = new JLabel();
+                label.setHorizontalAlignment(JLabel.CENTER);
+                label.setOpaque(true);
+                label.setFont(new Font("SansSerif", Font.BOLD, 12));
+
+                if (isSelected) {
+                    label.setBackground(AppTheme.ACCENT_TEAL_DARK);
+                    label.setForeground(Color.WHITE);
+                } else {
+                    label.setBackground(AppTheme.BG_CARD);
+                }
+
+                String status = String.valueOf(value);
+                if ("Active".equals(status)) {
+                    label.setText("● Active");
+                    if (!isSelected) label.setForeground(new Color(100, 255, 100));
+                } else if ("On Break".equals(status)) {
+                    label.setText("● On Break");
+                    if (!isSelected) label.setForeground(new Color(255, 200, 50));
+                } else if ("Emergency".equals(status)) {
+                    label.setText("● Emergency");
+                    if (!isSelected) label.setForeground(new Color(255, 100, 100));
+                }
+
+                return label;
+            }
+        });
+
+        JScrollPane scroll = new JScrollPane(table);
+        scroll.getViewport().setBackground(AppTheme.BG_CARD);
+        scroll.setBorder(BorderFactory.createEmptyBorder());
+        scroll.getVerticalScrollBar().setUI(new DarkScrollBarUI());
+
+        // Search filter untuk kolom Nama (index 1)
+        table.setAutoCreateRowSorter(true);
+        TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(teamModel);
+        table.setRowSorter(sorter);
+
+        searchDokter.getDocument().addDocumentListener(new DocumentListener() {
+            @Override public void insertUpdate(DocumentEvent e) { apply(); }
+            @Override public void removeUpdate(DocumentEvent e) { apply(); }
+            @Override public void changedUpdate(DocumentEvent e) { apply(); }
+
+            private void apply() {
+                final String q = searchDokter.getText() == null ? "" : searchDokter.getText().trim().toLowerCase();
+
+                if (q.isEmpty()) {
+                    sorter.setRowFilter(null);
+                    return;
+                }
+
+                sorter.setRowFilter(new RowFilter<DefaultTableModel, Integer>() {
+                    @Override
+                    public boolean include(Entry<? extends DefaultTableModel, ? extends Integer> entry) {
+                        Object namaObj = entry.getValue(1);
+                        String nama = namaObj == null ? "" : namaObj.toString().toLowerCase();
+                        return nama.contains(q);
+                    }
+                });
+            }
+        });
+
+        // header panel atas
+        JPanel header = new JPanel(new BorderLayout());
+        header.setOpaque(false);
+        header.add(title, BorderLayout.WEST);
+        header.add(topRight, BorderLayout.EAST);
+
+        tableCard.add(header, BorderLayout.NORTH);
+        tableCard.add(scroll, BorderLayout.CENTER);
+
+        wrapper.add(tableCard, BorderLayout.CENTER);
+
+
+
+        return wrapper;
+    }
+
+    private JPanel buildMedicationsView() {
+        JPanel wrapper = new JPanel(new BorderLayout());
+        wrapper.setOpaque(false);
+        wrapper.setBorder(new EmptyBorder(20, 30, 30, 30));
+
+        RoundedPanel tableCard = new RoundedPanel(20, AppTheme.BG_CARD);
+        tableCard.setLayout(new BorderLayout(0, 15));
+        tableCard.setBorder(new EmptyBorder(20, 20, 20, 20));
+
+        JPanel header = new JPanel(new BorderLayout());
+        header.setOpaque(false);
+        JLabel title = new JLabel("Medications & Treatments Database");
+        title.setFont(AppTheme.FONT_H2);
+        title.setForeground(AppTheme.TEXT_PRIMARY);
+
+        // --- SEARCH nama obat ---
+        JPanel headerRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        headerRight.setOpaque(false);
+
+        ModernInput obatSearch = new ModernInput();
+        obatSearch.setPreferredSize(new Dimension(280, 35));
+        obatSearch.setToolTipText("Cari nama obat...");
+        obatSearch.setText("");
+
+        headerRight.add(obatSearch);
+        header.add(title, BorderLayout.WEST);
+        header.add(headerRight, BorderLayout.EAST);
+
+        String[] kolom = {"Medicine ID", "Nama Obat", "Untuk Virus", "Stock", "Status"};
+        DefaultTableModel medModel = new DefaultTableModel(kolom, 0) {
+            @Override public boolean isCellEditable(int r, int c) { return false; }
+        };
+
+
+        // Sample Medications Data
+        String[][] medData = {
+            {"MED001", "Remdesivir", "Virus (+)ssRNA", "120", "Available"},
+            {"MED002", "Zidovudine", "Retrovirus", "50", "Limited"},
+            {"MED003", "Amoxicillin", "Bacterial Pathogen", "200", "Available"},
+            {"MED004", "Acyclovir", "Virus dsDNA", "80", "Available"},
+            {"MED005", "Ritonavir", "Retrovirus", "30", "Limited"},
+            {"MED006", "Lopinavir", "Virus (+)ssRNA", "95", "Available"},
+            {"MED007", "Cephalexin", "Bacterial Pathogen", "150", "Available"},
+            {"MED008", "Ganciclovir", "Virus dsDNA", "45", "Limited"}
+        };
+
+        for (String[] row : medData) {
+            medModel.addRow(row);
+        }
+
+        JTable table = new JTable(medModel);
+        table.setRowHeight(45);
+        table.setFont(AppTheme.FONT_NORMAL);
+        table.setBackground(AppTheme.BG_CARD);
+        table.setForeground(AppTheme.TEXT_PRIMARY);
+        table.setShowGrid(false);
+        table.setIntercellSpacing(new Dimension(0, 0));
+        table.setSelectionBackground(AppTheme.ACCENT_TEAL_DARK);
+        table.setSelectionForeground(Color.WHITE);
+
+        table.getTableHeader().setBackground(AppTheme.BG_CARD);
+        table.getTableHeader().setForeground(AppTheme.TEXT_MUTED);
+        table.getTableHeader().setFont(AppTheme.FONT_BOLD);
+        table.getTableHeader().setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, AppTheme.BORDER_COLOR));
+        table.getTableHeader().setPreferredSize(new Dimension(0, 45));
+        ((DefaultTableCellRenderer)table.getTableHeader().getDefaultRenderer()).setHorizontalAlignment(JLabel.LEFT);
+
+        // Custom Cell Renderer for Status Column
+        table.getColumnModel().getColumn(4).setCellRenderer(new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                JLabel label = new JLabel();
+                label.setHorizontalAlignment(JLabel.CENTER);
+                label.setOpaque(true);
+                label.setFont(new Font("SansSerif", Font.BOLD, 12));
+
+                if (isSelected) {
+                    label.setBackground(AppTheme.ACCENT_TEAL_DARK);
+                    label.setForeground(Color.WHITE);
+                } else {
+                    label.setBackground(AppTheme.BG_CARD);
+                }
+
+                String status = String.valueOf(value);
+                if ("Available".equals(status)) {
+                    label.setText("● Available");
+                    if (!isSelected) label.setForeground(new Color(100, 255, 100));
+                } else if ("Limited".equals(status)) {
+                    label.setText("● Limited");
+                    if (!isSelected) label.setForeground(new Color(255, 200, 50));
+                }
+
+                return label;
+            }
+        });
+
+        // --- Filter: cari nama obat berdasarkan input (kolom 1: Nama Obat) ---
+        table.setAutoCreateRowSorter(true);
+        TableRowSorter<DefaultTableModel> medSorter = new TableRowSorter<>(medModel);
+        table.setRowSorter(medSorter);
+
+        obatSearch.getDocument().addDocumentListener(new DocumentListener() {
+            @Override public void insertUpdate(DocumentEvent e) { apply(); }
+            @Override public void removeUpdate(DocumentEvent e) { apply(); }
+            @Override public void changedUpdate(DocumentEvent e) { apply(); }
+
+            private void apply() {
+                String q = obatSearch.getText() == null ? "" : obatSearch.getText().trim().toLowerCase();
+                if (q.isEmpty()) {
+                    medSorter.setRowFilter(null);
+                    return;
+                }
+
+                medSorter.setRowFilter(new RowFilter<DefaultTableModel, Integer>() {
+                    @Override
+                    public boolean include(Entry<? extends DefaultTableModel, ? extends Integer> entry) {
+                        Object namaObj = entry.getValue(1);
+                        String nama = namaObj == null ? "" : namaObj.toString().toLowerCase();
+                        return nama.contains(q);
+                    }
+                });
+            }
+        });
+
+        JScrollPane scroll = new JScrollPane(table);
+        scroll.getViewport().setBackground(AppTheme.BG_CARD);
+        scroll.setBorder(BorderFactory.createEmptyBorder());
+        scroll.getVerticalScrollBar().setUI(new DarkScrollBarUI());
+
+        tableCard.add(header, BorderLayout.NORTH);
+        tableCard.add(scroll, BorderLayout.CENTER);
+        wrapper.add(tableCard, BorderLayout.CENTER);
+
+        return wrapper;
+    }
+
     private void refreshData() {
         filterTable(); 
         
@@ -824,6 +1362,7 @@ class DashboardFrame extends JFrame {
         lblCritical.setText(String.valueOf(critical));
         
         int percent = total == 0 ? 0 : (int)((critical * 100.0)/total);
+        donutChart.updateData(typeCounts);
         donutChart.setPercentage(percent);
         barChart.updateData(typeCounts);
         
@@ -851,3 +1390,4 @@ class DashboardFrame extends JFrame {
     });
 }
 }
+
