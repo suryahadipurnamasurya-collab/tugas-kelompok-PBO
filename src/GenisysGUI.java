@@ -566,7 +566,7 @@ class LoginFrame extends JFrame {
     
     private void prosesLogin() {
         String user = txtUser.getText().trim().toUpperCase(); String pass = new String(txtPass.getPassword()).trim();
-        String[][] akunMahasiswa = { {"SURYAHADI PURNAMA", "4402"}, {"LEEVI QUSHAI RAY IFTIKHAR", "4390"}, {"MANDRIVA RADITHYA CAHYADI", "4406"}, {"SALSABILA OKTAVIA RAMADHANI", "4393"}, {"MUHAMMAD NADHIF FAIZURRAHMAN", "4388"}, {"FARHAN FAUZAN AZIMA", "4389"}, {"SAKARINA HARERA", "4407"}, {"MUTIARA NUR HIDAYAH", "4412"} };
+        String[][] akunMahasiswa = { {"SURYAHADI PURNAMA", "4402"}, {"LEEVI QUSHAI RAY IFTIKHAR", "4390"}, {"MANDRIVA RADITHYA CAHYADI", "4406"}, {"SALSABILA OKTAVIA RAMADHANI", "4393"}, {"MUHAMMAD NADHIF FAIZURRAHMAN", "4388"}, {"FAUZAN RAMDHANI FAJRI", "4400"}, {"SAKARINA HARERA", "4407"}, {"MUTIARA NUR HIDAYAH", "4412"} };
         boolean loginBerhasil = false;
         for (String[] akun : akunMahasiswa) {
             if (user.equals(akun[0]) && pass.equals(akun[1])) { loginBerhasil = true; new DashboardFrame(user).setVisible(true); this.dispose(); break; }
