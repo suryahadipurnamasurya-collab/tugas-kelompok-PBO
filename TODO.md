@@ -1,7 +1,6 @@
-- [x] Update GenisysGUI.java: tambahkan input pencarian & filter dokter di Medical Team
-- [x] Update GenisysGUI.java: tambahkan/ubah pencarian di data Virus (DNA/RNA) untuk cari ID virus
-- [x] Update GenisysGUI.java: tambahkan input pencarian & filter nama obat di Medications
+# TODO
 
-- [x] Jalankan compile/test cepat (jika ada command) untuk memastikan tidak ada error
-
+- [ ] Ubah icon JFrame (LoginFrame & DashboardFrame) agar menggunakan file `APKprofil.jpeg`.
+- [ ] Pastikan asset dibaca dari classpath (resource) agar icon muncul saat dijalankan.
+- [ ] Compile ulang `src/GenisysGUI.java` dan cek hasil icon di title bar/taskbar.
 

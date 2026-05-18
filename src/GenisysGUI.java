@@ -602,10 +602,25 @@ class LoginFrame extends JFrame {
     private ModernInput txtUser;
     private ModernPassword txtPass;
 
+    private void applyAppIcon() {
+        try {
+            // Load dari classpath agar tidak tergantung current directory
+            java.net.URL url = getClass().getResource("/APKprofil.jpeg");
+            if (url != null) {
+                Image img = javax.imageio.ImageIO.read(url);
+                setIconImage(img);
+            }
+        } catch (Exception ignored) {
+            // Jika gagal load, biarkan icon default
+        }
+    }
+
     public LoginFrame() {
         setTitle("Genisys x AuraHealth - Login"); setSize(450, 500);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); setLocationRelativeTo(null);
         getContentPane().setBackground(AppTheme.BG_MAIN); setLayout(new BorderLayout());
+        applyAppIcon();
+
 
         RoundedPanel card = new RoundedPanel(25, AppTheme.BG_CARD);
         card.setBorder(new EmptyBorder(40, 40, 40, 40)); card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
@@ -690,8 +705,21 @@ class LoginFrame extends JFrame {
 class DashboardFrame extends JFrame {
     private String operatorName;
     private DatabaseLab db = new DatabaseLab();
+
+    private void applyAppIcon() {
+        try {
+            java.net.URL url = getClass().getResource("/APKprofil.jpeg");
+            if (url != null) {
+                Image img = javax.imageio.ImageIO.read(url);
+                setIconImage(img);
+            }
+        } catch (Exception ignored) {
+        }
+    }
+
     
     private DefaultTableModel tableModel;
+
     private JLabel lblTotal, lblCritical;
     private DonutChart donutChart;
     private BarChart barChart;
@@ -702,10 +730,12 @@ class DashboardFrame extends JFrame {
     private CardLayout cardLayout;
     private ArrayList<JPanel> sidebarButtons = new ArrayList<>();
 
-    public DashboardFrame(String operatorName) {
-        this.operatorName = operatorName;
+public DashboardFrame(String operatorName) {
+        this.operatorName = operatorName == null ? "" : operatorName.trim().toUpperCase();
+
         setTitle("Dashboard - " + operatorName);
         setSize(1400, 900);
+        applyAppIcon();
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         getContentPane().setBackground(AppTheme.BG_MAIN);
@@ -1083,7 +1113,7 @@ private JPanel buildRecordsView() {
         top.add(title, BorderLayout.WEST);
         top.add(topRight, BorderLayout.EAST);
 
-        RoundedPanel tableCard = new RoundedPanel(20, AppTheme.BG_CARD);
+        RoundedPanel tableCard = new RoundedPanel(50, AppTheme.BG_CARD);
         tableCard.setLayout(new BorderLayout(0, 15));
         tableCard.setBorder(new EmptyBorder(20, 20, 20, 20));
 
@@ -1115,6 +1145,7 @@ private JPanel buildRecordsView() {
         table.setIntercellSpacing(new Dimension(0, 0));
         table.setSelectionBackground(AppTheme.ACCENT_TEAL_DARK);
         table.setSelectionForeground(Color.WHITE);
+        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
         table.getTableHeader().setBackground(AppTheme.BG_CARD);
         table.getTableHeader().setForeground(AppTheme.TEXT_MUTED);
@@ -1160,6 +1191,140 @@ private JPanel buildRecordsView() {
         scroll.setBorder(BorderFactory.createEmptyBorder());
         scroll.getVerticalScrollBar().setUI(new DarkScrollBarUI());
 
+        // Sample Medical Team Profile Data
+        final String[][] doctorProfileData = {
+            {"DR001", "Prof. Dr. Surya", "PhD Virology", "48", "Virologist", "Active", "Pagi", "+62-812-3456-7890", "Senior virologist leading pathogen analysis and emergency response."},
+            {"DR002", "Dr. Tirta", "MSc Genetic Engineering", "35", "Geneticist", "On Break", "Malam", "+62-821-5678-9012", "Genetic specialist focused on mutation mapping and lab diagnostics."},
+            {"DR003", "Dr. Ikhsan", "MSc Microbiology", "40", "Microbiologist", "Active", "Siang", "+62-813-9012-3456", "Expert in microbial surveillance and contamination prevention."},
+            {"DR004", "Dr. Gia", "PhD Immunology", "42", "Immunologist", "Emergency", "Pagi", "+62-822-3456-7890", "Immunology researcher handling urgent cases and critical care coordination."}
+        };
+
+        final java.util.Map<String, ImageIcon> doctorPhotoMap = new java.util.HashMap<>();
+
+        JLabel lblDoctorName = new JLabel("Pilih dokter untuk melihat detail");
+        lblDoctorName.setForeground(AppTheme.TEXT_PRIMARY);
+        lblDoctorName.setFont(AppTheme.FONT_H2);
+        lblDoctorName.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JLabel lblDoctorStatus = new JLabel("Status: -");
+        lblDoctorStatus.setForeground(AppTheme.TEXT_MUTED);
+        lblDoctorStatus.setFont(AppTheme.FONT_NORMAL);
+        lblDoctorStatus.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JLabel photoPreview = new JLabel("Foto Dokter", SwingConstants.CENTER);
+        photoPreview.setOpaque(true);
+        photoPreview.setBackground(AppTheme.BG_INPUT);
+        photoPreview.setForeground(AppTheme.TEXT_MUTED);
+        photoPreview.setFont(AppTheme.FONT_BOLD);
+        photoPreview.setBorder(BorderFactory.createLineBorder(AppTheme.BORDER_COLOR, 2));
+        photoPreview.setPreferredSize(new Dimension(220, 220));
+        photoPreview.setMaximumSize(new Dimension(220, 220));
+        photoPreview.setMinimumSize(new Dimension(220, 220));
+        photoPreview.setAlignmentX(Component.CENTER_ALIGNMENT);
+        photoPreview.setVerticalTextPosition(SwingConstants.CENTER);
+        photoPreview.setHorizontalTextPosition(SwingConstants.CENTER);
+
+        JLabel lblDoctorId = new JLabel("--");
+        JLabel lblDoctorEducation = new JLabel("--");
+        JLabel lblDoctorAge = new JLabel("--");
+        JLabel lblDoctorSpec = new JLabel("--");
+        JLabel lblDoctorShift = new JLabel("--");
+        JLabel lblDoctorPhone = new JLabel("--");
+
+        ModernBtn btnViewProfile = new ModernBtn("Lihat Identitas Lengkap", AppTheme.ACCENT_TEAL, AppTheme.ACCENT_TEAL_DARK);
+        btnViewProfile.setMaximumSize(new Dimension(Integer.MAX_VALUE, 45));
+        btnViewProfile.setEnabled(false);
+        btnViewProfile.addActionListener(e -> {
+            int selected = table.getSelectedRow();
+            if (selected < 0) return;
+            int modelRow = table.convertRowIndexToModel(selected);
+            String selectedId = teamModel.getValueAt(modelRow, 0).toString();
+            String[] profile = null;
+            for (String[] row : doctorProfileData) {
+                if (row[0].equals(selectedId)) {
+                    profile = row;
+                    break;
+                }
+            }
+            if (profile != null) {
+                showDoctorProfileDialog(profile);
+            }
+        });
+
+        ModernBtn btnChangePhoto = new ModernBtn("Ganti Foto", AppTheme.BG_INPUT, AppTheme.BORDER_COLOR);
+        btnChangePhoto.setMaximumSize(new Dimension(Integer.MAX_VALUE, 45));
+        btnChangePhoto.setEnabled(false);
+        btnChangePhoto.setToolTipText("Hanya SURYAHADI PURNAMA dapat mengganti foto.");
+        btnChangePhoto.addActionListener(e -> {
+            int selected = table.getSelectedRow();
+            if (selected < 0) return;
+            int modelRow = table.convertRowIndexToModel(selected);
+            String selectedId = teamModel.getValueAt(modelRow, 0).toString();
+
+            JFileChooser chooser = new JFileChooser();
+            chooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("Image files", "jpg", "jpeg", "png", "gif"));
+            int result = chooser.showOpenDialog(DashboardFrame.this);
+            if (result == JFileChooser.APPROVE_OPTION) {
+                java.io.File file = chooser.getSelectedFile();
+                ImageIcon icon = new ImageIcon(file.getAbsolutePath());
+                Image image = icon.getImage().getScaledInstance(220, 220, Image.SCALE_SMOOTH);
+                ImageIcon scaledIcon = new ImageIcon(image);
+                doctorPhotoMap.put(selectedId, scaledIcon);
+                photoPreview.setIcon(scaledIcon);
+                photoPreview.setText("");
+            }
+        });
+
+        table.getSelectionModel().addListSelectionListener(e -> {
+            if (e.getValueIsAdjusting()) return;
+            int selected = table.getSelectedRow();
+            if (selected < 0) {
+                lblDoctorName.setText("Pilih dokter untuk melihat detail");
+                lblDoctorStatus.setText("Status: -");
+                lblDoctorId.setText("--");
+                lblDoctorEducation.setText("--");
+                lblDoctorAge.setText("--");
+                lblDoctorSpec.setText("--");
+                lblDoctorShift.setText("--");
+                lblDoctorPhone.setText("--");
+                photoPreview.setIcon(null);
+                photoPreview.setText("Foto Dokter");
+                btnViewProfile.setEnabled(false);
+                btnChangePhoto.setEnabled(false);
+                return;
+            }
+
+            int modelRow = table.convertRowIndexToModel(selected);
+            String selectedId = teamModel.getValueAt(modelRow, 0).toString();
+            String[] profile = null;
+            for (String[] row : doctorProfileData) {
+                if (row[0].equals(selectedId)) {
+                    profile = row;
+                    break;
+                }
+            }
+            if (profile != null) {
+                lblDoctorName.setText(profile[1]);
+                lblDoctorStatus.setText("Status: " + profile[5]);
+                lblDoctorId.setText(profile[0]);
+                lblDoctorEducation.setText(profile[2]);
+                lblDoctorAge.setText(profile[3]);
+                lblDoctorSpec.setText(profile[4]);
+                lblDoctorShift.setText(profile[6]);
+                lblDoctorPhone.setText(profile[7]);
+                ImageIcon photo = doctorPhotoMap.get(profile[0]);
+                if (photo != null) {
+                    photoPreview.setIcon(photo);
+                    photoPreview.setText("");
+                } else {
+                    photoPreview.setIcon(null);
+                    photoPreview.setText("Foto Dokter");
+                }
+                btnViewProfile.setEnabled(true);
+                btnChangePhoto.setEnabled("SURYAHADI PURNAMA".equals(operatorName));
+            }
+        });
+
         // Search filter untuk kolom Nama (index 1)
         table.setAutoCreateRowSorter(true);
         TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(teamModel);
@@ -1198,11 +1363,95 @@ private JPanel buildRecordsView() {
         tableCard.add(header, BorderLayout.NORTH);
         tableCard.add(scroll, BorderLayout.CENTER);
 
+        JPanel profileCard = new RoundedPanel(50, AppTheme.BG_CARD);
+        profileCard.setLayout(new BoxLayout(profileCard, BoxLayout.Y_AXIS));
+        profileCard.setBorder(new EmptyBorder(20, 20, 20, 20));
+        profileCard.setPreferredSize(new Dimension(360, 0));
+
+        profileCard.add(photoPreview);
+        profileCard.add(Box.createVerticalStrut(15));
+        profileCard.add(lblDoctorName);
+        profileCard.add(Box.createVerticalStrut(6));
+        profileCard.add(lblDoctorStatus);
+        profileCard.add(Box.createVerticalStrut(20));
+        profileCard.add(createInfoLine("ID Dokter", lblDoctorId));
+        profileCard.add(createInfoLine("Pendidikan Terakhir", lblDoctorEducation));
+        profileCard.add(createInfoLine("Umur", lblDoctorAge));
+        profileCard.add(createInfoLine("Spesialisasi", lblDoctorSpec));
+        profileCard.add(createInfoLine("Shift", lblDoctorShift));
+        profileCard.add(createInfoLine("No. Kontak", lblDoctorPhone));
+        profileCard.add(Box.createVerticalStrut(20));
+        profileCard.add(btnChangePhoto);
+        profileCard.add(Box.createVerticalStrut(10));
+        profileCard.add(btnViewProfile);
+
         wrapper.add(tableCard, BorderLayout.CENTER);
+        wrapper.add(profileCard, BorderLayout.EAST);
 
 
 
         return wrapper;
+    }
+
+    private JPanel createInfoLine(String title, JLabel valueLabel) {
+        JPanel row = new JPanel(new BorderLayout());
+        row.setOpaque(false);
+        row.setBorder(new EmptyBorder(6, 0, 6, 0));
+
+        JLabel titleLabel = new JLabel(title);
+        titleLabel.setForeground(AppTheme.TEXT_MUTED);
+        titleLabel.setFont(new Font("SansSerif", Font.PLAIN, 11));
+
+        valueLabel.setForeground(AppTheme.TEXT_PRIMARY);
+        valueLabel.setFont(AppTheme.FONT_BOLD);
+
+        row.add(titleLabel, BorderLayout.NORTH);
+        row.add(valueLabel, BorderLayout.SOUTH);
+        return row;
+    }
+
+    private void showDoctorProfileDialog(String[] profile) {
+        JDialog dialog = new JDialog(this, "Identitas Dokter", true);
+        dialog.setSize(520, 620);
+        dialog.setLocationRelativeTo(this);
+        dialog.getContentPane().setBackground(AppTheme.BG_MAIN);
+
+        RoundedPanel content = new RoundedPanel(50, AppTheme.BG_CARD);
+        content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
+        content.setBorder(new EmptyBorder(25, 25, 25, 25));
+
+        JLabel title = new JLabel("Biodata Lengkap Dokter");
+        title.setForeground(AppTheme.TEXT_PRIMARY);
+        title.setFont(AppTheme.FONT_H2);
+        title.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        JLabel subtitle = new JLabel(profile[1]);
+        subtitle.setForeground(AppTheme.ACCENT_TEAL);
+        subtitle.setFont(new Font("SansSerif", Font.BOLD, 18));
+        subtitle.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        content.add(title);
+        content.add(Box.createVerticalStrut(8));
+        content.add(subtitle);
+        content.add(Box.createVerticalStrut(20));
+        content.add(createInfoLine("ID Dokter", new JLabel(profile[0])));
+        content.add(createInfoLine("Pendidikan Terakhir", new JLabel(profile[2])));
+        content.add(createInfoLine("Umur", new JLabel(profile[3] + " tahun")));
+        content.add(createInfoLine("Spesialisasi", new JLabel(profile[4])));
+        content.add(createInfoLine("Status", new JLabel(profile[5])));
+        content.add(createInfoLine("Shift", new JLabel(profile[6])));
+        content.add(createInfoLine("No. Kontak", new JLabel(profile[7])));
+        content.add(Box.createVerticalStrut(20));
+
+        ModernBtn closeBtn = new ModernBtn("Tutup", AppTheme.ACCENT_TEAL, AppTheme.ACCENT_TEAL_DARK);
+        closeBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
+        closeBtn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 45));
+        closeBtn.addActionListener(e -> dialog.dispose());
+
+        content.add(closeBtn);
+
+        dialog.add(content);
+        dialog.setVisible(true);
     }
 
     private JPanel buildMedicationsView() {
