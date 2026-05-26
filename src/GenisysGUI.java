@@ -1086,7 +1086,9 @@ class DashboardFrame extends JFrame {
         }
         barChart.updateData(barData, barLabels);
     }
+}
 
+public class GenisysGUI {
     public static void main(String[] args) {
         try {
             for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
