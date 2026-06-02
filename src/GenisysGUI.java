@@ -362,6 +362,16 @@ class DonutChart extends JPanel {
         int labelY = totalY + fmLabel.getHeight() + 5;
         g2.drawString(centerLabel, labelX, labelY);
 
+        // if percentage is provided (0-100), display it under the center label
+        if (percentage > 0) {
+            String pct = percentage + "%";
+            g2.setFont(new Font("SansSerif", Font.BOLD, 14));
+            FontMetrics fmPct = g2.getFontMetrics();
+            int pctX = x + (size - fmPct.stringWidth(pct)) / 2;
+            int pctY = labelY + fmPct.getHeight() + 4;
+            g2.drawString(pct, pctX, pctY);
+        }
+
         int legendY = y + size + 20; int legendX = x + (size - 100) / 2;
         if (labels != null) {
             for (int i = 0; i < labels.length; i++) {
